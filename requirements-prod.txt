@@ -1,0 +1,10 @@
+# Зависимости для продакшена
+-r requirements.txt
+
+# Production server with gevent worker
+gunicorn==21.2.0
+gevent==24.2.1
+gevent-websocket==0.10.1
+
+# PostgreSQL driver
+psycopg2-binary==2.9.9
