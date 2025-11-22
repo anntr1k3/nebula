@@ -12,9 +12,8 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Length, ValidationError, Regexp
 from werkzeug.security import generate_password_hash, check_password_hash
 import bleach
-import secrets
-import hmac
 from dotenv import load_dotenv
+from config import config
 
 # Загрузка переменных окружения
 load_dotenv()
@@ -25,7 +24,6 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # Загрузка конфигурации
-from config import config
 config_name = os.environ.get('FLASK_ENV', 'development')
 app.config.from_object(config[config_name])
 
@@ -275,10 +273,9 @@ def cleanup_messages_endpoint():
         if days < 1:
             return jsonify({'error': 'Days must be at least 1'}), 400
         
-        from datetime import timedelta
-        cutoff_date = datetime.utcnow() - timedelta(days=days)
+        from datetime import timedelta, datetime
+        cutoff_date = datetime.now(datetime.UTC) - timedelta(days=days)
         
-        count = Message.query.filter(Message.timestamp < cutoff_date).count()
         deleted = Message.query.filter(Message.timestamp < cutoff_date).delete()
         db.session.commit()
         
@@ -381,7 +378,7 @@ def create_private_room(user_id):
         
         # Проверяем, существует ли уже личная комната между этими пользователями
         existing_room = Room.query.filter(
-            Room.is_private == True,
+            Room.is_private,
             Room.members.any(User.id == current_user.id),
             Room.members.any(User.id == other_user.id)
         ).first()
@@ -604,7 +601,7 @@ def handle_leave_room(data):
 
 def check_websocket_rate_limit(user_id):
     """Проверка rate limit для WebSocket сообщений"""
-    now = datetime.utcnow()
+    now = datetime.now(datetime.UTC)
     cutoff = now - timedelta(seconds=WS_TIME_WINDOW)
     
     # Очищаем старые записи
@@ -659,7 +656,8 @@ def handle_message(data):
             return
         
         # Очистка и ограничение длины
-        text = sanitize_message(str(data.get('text', '')))[:app.config['MAX_MESSAGE_LENGTH']]
+        max_length = app.config.get('MAX_MESSAGE_LENGTH', 1000)  # значение по умолчанию 1000
+        text = sanitize_message(str(data.get('text', '')))[:max_length]
         
         if not text.strip():
             emit('error', {'message': 'Сообщение не может быть пустым'})
@@ -768,8 +766,8 @@ def cleanup_old_messages_auto():
         if max_message_age_days <= 0:
             return  # Очистка отключена
         
-        from datetime import timedelta
-        cutoff_date = datetime.utcnow() - timedelta(days=max_message_age_days)
+        from datetime import timedelta, datetime
+        cutoff_date = datetime.now(datetime.UTC) - timedelta(days=max_message_age_days)
         
         deleted = Message.query.filter(Message.timestamp < cutoff_date).delete()
         

@@ -1,0 +1,9 @@
+[2025-11-22 17:08:36] INFO in utils: Logging system initialized
+[2025-11-22 17:08:36] INFO in utils: Logging system initialized
+[2025-11-22 17:08:36] INFO in utils: Log level: INFO
+[2025-11-22 17:08:36] INFO in utils: Log level: INFO
+[2025-11-22 17:08:36] INFO in utils: Log file: logs/app.log
+[2025-11-22 17:08:36] INFO in utils: Log file: logs/app.log
+[2025-11-22 17:08:38] INFO in app: Database initialized
+[2025-11-22 17:08:38] INFO in app: Starting Nebula Chat on 127.0.0.1:5000
+[2025-11-22 17:08:38] INFO in app: Debug mode: True
