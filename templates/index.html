@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="app" id="main-content">
+  <div id="sidebar">
+    <div id="user-info">
+      <div class="username">👤 {{ current_user.username }}</div>
+      <div class="user-settings">
+        <button id="theme-toggle" aria-label="Переключить тему оформления">
+          <span class="theme-icon">🌙</span>
+          <span class="theme-text">Сменить тему</span>
+        </button>
+        <button id="logout-btn" onclick="location.href='{{ url_for('logout') }}'" aria-label="Выйти из аккаунта">Выйти</button>
+      </div>
+    </div>
+    
+    <div id="actions">
+      <button id="search-user-btn" class="action-btn" aria-label="Найти пользователя для личного чата">🔍 Найти пользователя</button>
+      <button id="create-group-btn" class="action-btn" aria-label="Создать новую группу">➕ Создать группу</button>
+    </div>
+    
+    <h2>Комнаты</h2>
+    <ul id="rooms-list">
+      {% for room in rooms %}
+        <li data-room-id="{{ room.id }}" data-is-group="{{ room.is_group|lower }}" data-is-private="{{ room.is_private|lower }}">
+          {% if room.is_private %}💬{% elif room.is_group %}👥{% else %}#{% endif %} {{ room.name }}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div id="chat-container">
+    <div id="chat-header">
+      <div id="room-title"></div>
+      <div id="room-actions">
+        <button id="invite-btn" style="display: none;">➕ Пригласить</button>
+        <button id="members-btn" style="display: none;">👥 Участники</button>
+      </div>
+    </div>
+    
+    <div id="connection-status"></div>
+    
+    <div id="messages"></div>
+    
+    <div id="typing-indicator"></div>
+    
+    <div id="input-area">
+      <input 
+        type="text" 
+        id="message-input" 
+        placeholder="Введите сообщение..." 
+        maxlength="500"
+        autocomplete="off"
+        aria-label="Поле ввода сообщения"
+      />
+      <span id="char-count">0/500</span>
+      <button id="send-button" disabled aria-label="Отправить сообщение">Отправить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно поиска пользователей -->
+<div id="search-modal" class="modal" role="dialog" aria-labelledby="search-modal-title" aria-hidden="true">
+  <div class="modal-content" role="document">
+    <button class="close" aria-label="Закрыть">&times;</button>
+    <h2 id="search-modal-title">Поиск пользователя</h2>
+    <input type="text" id="search-input" placeholder="Введите никнейм..." autocomplete="off" aria-label="Поиск пользователя по никнейму" />
+    <div id="search-results"></div>
+  </div>
+</div>
+
+<!-- Модальное окно создания группы -->
+<div id="group-modal" class="modal" role="dialog" aria-labelledby="group-modal-title" aria-hidden="true">
+  <div class="modal-content" role="document">
+    <button class="close" aria-label="Закрыть">&times;</button>
+    <h2 id="group-modal-title">Создать группу</h2>
+    <input type="text" id="group-name-input" placeholder="Название группы..." maxlength="100" autocomplete="off" aria-label="Название новой группы" />
+    <button id="create-group-submit" aria-label="Создать группу">Создать</button>
+  </div>
+</div>
+
+<!-- Модальное окно приглашения в группу -->
+<div id="invite-modal" class="modal" role="dialog" aria-labelledby="invite-modal-title" aria-hidden="true">
+  <div class="modal-content" role="document">
+    <button class="close" aria-label="Закрыть">&times;</button>
+    <h2 id="invite-modal-title">Пригласить в группу</h2>
+    <input type="text" id="invite-search-input" placeholder="Введите никнейм..." autocomplete="off" aria-label="Поиск пользователя для приглашения" />
+    <div id="invite-search-results"></div>
+  </div>
+</div>
+
+<!-- Модальное окно участников -->
+<div id="members-modal" class="modal" role="dialog" aria-labelledby="members-modal-title" aria-hidden="true">
+  <div class="modal-content" role="document">
+    <button class="close" aria-label="Закрыть">&times;</button>
+    <h2 id="members-modal-title">Участники</h2>
+    <div id="members-list"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+<script src="{{ url_for('static', filename='js/animations.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

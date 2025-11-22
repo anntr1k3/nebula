@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Вход - Nebula Chat{% endblock %}
+
+{% block content %}
+<button id="theme-toggle-auth" class="theme-toggle-auth">🌙</button>
+
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>✨ Nebula Chat</h2>
+    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.95rem;">Войдите, чтобы начать общение</p>
+    
+    <form method="POST" action="{{ url_for('login') }}">
+      {{ form.hidden_tag() }}
+      
+      <div class="form-group">
+        {{ form.username.label }}
+        {{ form.username(class="form-control", required=true, minlength=3, maxlength=50, autocomplete="username") }}
+        {% if form.username.errors %}
+          {% for error in form.username.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        {% endif %}
+      </div>
+      
+      <div class="form-group">
+        {{ form.password.label }}
+        {{ form.password(class="form-control", required=true, minlength=6, autocomplete="current-password") }}
+        {% if form.password.errors %}
+          {% for error in form.password.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        {% endif %}
+      </div>
+      
+      {{ form.submit(class="btn") }}
+    </form>
+    
+    <div class="auth-link">
+      Нет аккаунта? <a href="{{ url_for('register') }}">Зарегистрироваться</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
