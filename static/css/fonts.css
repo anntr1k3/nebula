@@ -1,0 +1,266 @@
+/* 
+ * Настройки шрифтов для Nebula Chat
+ * Используется Discord-подобный шрифт (gg sans альтернатива)
+ * Discord использует кастомный "gg sans", поэтому используем максимально похожие системные шрифты
+ */
+
+/* 
+ * Основной шрифт - максимально похож на Discord (gg sans)
+ * Используем комбинацию системных шрифтов, визуально идентичных Discord
+ */
+body {
+  font-family: 
+    'Segoe UI Variable',      /* Windows 11 - самый близкий к Discord */
+    'Segoe UI',               /* Windows 10/11 - системный шрифт */
+    -apple-system,            /* macOS San Francisco */
+    BlinkMacSystemFont,       /* macOS системный */
+    'Helvetica Neue',         /* macOS/iOS fallback */
+    'Helvetica',              /* Классический Helvetica */
+    'Arial',                  /* Универсальный fallback */
+    sans-serif;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* 
+ * Заголовки - используем тот же шрифт, что и основной текст (как в Discord)
+ */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 
+    'Segoe UI Variable',
+    'Segoe UI',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Helvetica Neue',
+    'Helvetica',
+    'Arial',
+    sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Кнопки и интерактивные элементы - как в Discord */
+button,
+.btn,
+.action-btn,
+.settings-btn,
+input[type="submit"],
+input[type="button"] {
+  font-family: 
+    'Segoe UI Variable',
+    'Segoe UI',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Helvetica Neue',
+    'Helvetica',
+    'Arial',
+    sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Поля ввода - как в Discord */
+input,
+textarea,
+select {
+  font-family: 
+    'Segoe UI Variable',
+    'Segoe UI',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Helvetica Neue',
+    'Helvetica',
+    'Arial',
+    sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+/* Моноширинный шрифт для кода (если понадобится) */
+code,
+pre,
+.monospace {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-feature-settings: 
+    'calt' 1,  /* Лигатуры для кода */
+    'liga' 1;
+}
+
+/* Оптимизация рендеринга шрифтов */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Размеры шрифтов для разных элементов */
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.text-base {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+  line-height: 1.5;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 1.4;
+}
+
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 1.3;
+}
+
+/* Веса шрифтов */
+.font-normal {
+  font-weight: 400;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.font-extrabold {
+  font-weight: 800;
+}
+
+/* Специальные стили для кириллицы */
+:lang(ru), :lang(uk), :lang(be) {
+  letter-spacing: 0.01em;
+}
+
+/* Улучшенная читаемость для длинных текстов */
+.message-text,
+.long-text {
+  font-size: 0.96rem;
+  line-height: 1.65;
+  letter-spacing: 0.01em;
+  word-spacing: 0.05em;
+}
+
+/* Заголовки с улучшенной типографикой */
+h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+}
+
+h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1.5;
+}
+
+h5 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.5;
+}
+
+h6 {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.5;
+}
+
+/* Адаптивная типографика */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+  
+  h2 {
+    font-size: 1.75rem;
+  }
+  
+  h3 {
+    font-size: 1.375rem;
+  }
+  
+  body {
+    font-size: 0.9375rem;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.75rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+  }
+  
+  body {
+    font-size: 0.875rem;
+  }
+}
+
+/* Эмодзи и иконки */
+.emoji {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+  font-style: normal;
+  font-weight: normal;
+}
+
+/* Числа с табличным выравниванием */
+.tabular-nums {
+  font-feature-settings: 'tnum' 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Дроби */
+.fractions {
+  font-feature-settings: 'frac' 1;
+  font-variant-numeric: diagonal-fractions;
+}

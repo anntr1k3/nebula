@@ -23,4 +23,4 @@ sphinx-rtd-theme==2.0.0
 
 # Security scanning
 bandit==1.7.5
-safety==2.3.5
+safety==3.2.11

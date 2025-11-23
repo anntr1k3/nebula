@@ -1,16 +1,24 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="{{ user_lang if user_lang is defined else 'ru' }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Nebula Chat - Современный мессенджер с эффектом Liquid Glass">
   <title>{% block title %}Nebula Chat{% endblock %}</title>
+  
+  <!-- Discord-подобные шрифты -->
+  <!-- Используем системные шрифты, максимально похожие на Discord (gg sans) -->
+  
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
   {% block extra_head %}{% endblock %}
 </head>
 <body data-theme="light">
   <!-- Skip navigation link для доступности -->
-  <a href="#main-content" class="skip-link">Перейти к основному содержимому</a>
+  <a href="#main-content" class="skip-link" data-i18n="skip_to_content">
+    {% if user_lang is defined and user_lang == 'en' %}Skip to main content{% else %}Перейти к основному содержимому{% endif %}
+  </a>
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div class="flash-messages">

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+  <div class="page-header">
+    <a href="{{ url_for('index') }}" class="back-btn">
+      <span>←</span>
+      <span data-i18n="back">{{ translations.back }}</span>
+    </a>
+    <h1 data-i18n="edit_profile">{{ translations.edit_profile }}</h1>
+  </div>
+
+  <div class="profile-content">
+    <div class="profile-section">
+      <h2 data-i18n="avatar">{{ translations.avatar }}</h2>
+      <div class="current-avatar">
+        <span data-i18n="current_avatar">{{ translations.current_avatar }}:</span>
+        <span id="current-avatar" class="avatar-display">{{ current_user.avatar }}</span>
+      </div>
+      <div class="avatar-grid">
+        <button class="avatar-option">😀</button>
+        <button class="avatar-option">😎</button>
+        <button class="avatar-option">🤖</button>
+        <button class="avatar-option">👻</button>
+        <button class="avatar-option">🐱</button>
+        <button class="avatar-option">🐶</button>
+        <button class="avatar-option">🦊</button>
+        <button class="avatar-option">🐼</button>
+        <button class="avatar-option">🦁</button>
+        <button class="avatar-option">🐯</button>
+        <button class="avatar-option">🦄</button>
+        <button class="avatar-option">🐉</button>
+        <button class="avatar-option">🌟</button>
+        <button class="avatar-option">⚡</button>
+        <button class="avatar-option">🔥</button>
+        <button class="avatar-option">💎</button>
+      </div>
+    </div>
+    
+    <div class="profile-section">
+      <h2 data-i18n="change_username">{{ translations.change_username }}</h2>
+      <div class="username-display">
+        <span data-i18n="current_username">{{ translations.current_username }}:</span>
+        <strong id="current-username">{{ current_user.username }}</strong>
+      </div>
+      <input 
+        type="text" 
+        id="new-username-input" 
+        placeholder="{{ translations.new_username }}"
+        data-i18n="new_username"
+        maxlength="50"
+        autocomplete="off"
+      />
+      <button id="change-username-btn" class="btn-primary" data-i18n="save">{{ translations.save }}</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.body.dataset.lang = '{{ user_lang }}';
+</script>
+<script src="{{ url_for('static', filename='js/profile-page.js') }}"></script>
+{% endblock %}

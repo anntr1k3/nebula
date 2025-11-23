@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+  <div class="page-header">
+    <a href="{{ url_for('index') }}" class="back-btn">
+      <span>←</span>
+      <span data-i18n="back">{{ translations.back }}</span>
+    </a>
+    <h1 data-i18n="find_users">{{ translations.find_users }}</h1>
+  </div>
+
+  <div class="search-content">
+    <div class="search-box">
+      <input 
+        type="text" 
+        id="search-input" 
+        placeholder="{{ translations.search_placeholder }}" 
+        data-i18n="search_placeholder" 
+        autocomplete="off" 
+        aria-label="{{ translations.search_users }}"
+        autofocus
+      />
+    </div>
+    <div id="search-results" class="results-container"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.body.dataset.lang = '{{ user_lang }}';
+</script>
+<script src="{{ url_for('static', filename='js/create-chat-page.js') }}"></script>
+{% endblock %}

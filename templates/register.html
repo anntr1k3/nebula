@@ -1,21 +1,23 @@
 {% extends "base.html" %}
 
-{% block title %}Регистрация - Nebula Chat{% endblock %}
+{% block title %}{{ translations.register_title }} - {{ translations.app_title }}{% endblock %}
 
 {% block content %}
 <button id="theme-toggle-auth" class="theme-toggle-auth">🌙</button>
 
-<div class="auth-container">
+<div class="auth-container" id="main-content">
   <div class="auth-card">
-    <h2>🚀 Создать аккаунт</h2>
-    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.95rem;">Присоединяйтесь к Nebula Chat</p>
+    <h2>🚀 {{ translations.register_title }}</h2>
+    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.98rem; font-weight: 500; position: relative; z-index: 1;" data-i18n="register_subtitle">
+      {% if user_lang == 'ru' %}Присоединяйтесь к Nebula Chat{% else %}Join Nebula Chat{% endif %}
+    </p>
     
     <form method="POST" action="{{ url_for('register') }}">
       {{ form.hidden_tag() }}
       
       <div class="form-group">
-        {{ form.username.label }}
-        {{ form.username(class="form-control", required=true, minlength=3, maxlength=50, autocomplete="username", pattern="[a-zA-Z0-9_-]+", title="Только буквы, цифры, дефис и подчеркивание") }}
+        <label for="{{ form.username.id }}">{{ translations.username }}</label>
+        {{ form.username(class="form-control", required=true, minlength=3, maxlength=50, autocomplete="username", pattern="[a-zA-Z0-9_-]+", title=translations.username_invalid) }}
         {% if form.username.errors %}
           {% for error in form.username.errors %}
             <div class="form-error">{{ error }}</div>
@@ -24,7 +26,7 @@
       </div>
       
       <div class="form-group">
-        {{ form.password.label }}
+        <label for="{{ form.password.id }}">{{ translations.password }}</label>
         {{ form.password(class="form-control", required=true, minlength=6, autocomplete="new-password") }}
         {% if form.password.errors %}
           {% for error in form.password.errors %}
@@ -33,11 +35,11 @@
         {% endif %}
       </div>
       
-      {{ form.submit(class="btn") }}
+      <button type="submit" class="btn">{{ translations.register }}</button>
     </form>
     
     <div class="auth-link">
-      Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a>
+      {{ translations.have_account }} <a href="{{ url_for('login') }}">{{ translations.login }}</a>
     </div>
   </div>
 </div>

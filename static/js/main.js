@@ -6,6 +6,28 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
   
+  // Получение текущего языка и переводов
+  const currentLang = document.body.dataset.lang || 'ru';
+  let translations = {};
+  
+  // Загрузка переводов
+  async function loadTranslations() {
+    try {
+      const response = await fetch(`/api/translations/${currentLang}`);
+      translations = await response.json();
+    } catch (error) {
+      console.error('Error loading translations:', error);
+    }
+  }
+  
+  // Вызываем загрузку переводов
+  loadTranslations();
+  
+  // Функция для получения перевода
+  function t(key) {
+    return translations[key] || key;
+  }
+  
   const socket = io({
     reconnection: true,
     reconnectionDelay: 1000,
@@ -23,13 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const inviteBtn = document.getElementById('invite-btn');
   const membersBtn = document.getElementById('members-btn');
   
-  // Кнопки действий
-  const searchUserBtn = document.getElementById('search-user-btn');
-  const createGroupBtn = document.getElementById('create-group-btn');
-  
-  // Модальные окна
-  const searchModal = document.getElementById('search-modal');
-  const groupModal = document.getElementById('group-modal');
+  // Модальные окна (только для приглашения и участников)
   const inviteModal = document.getElementById('invite-modal');
   const membersModal = document.getElementById('members-modal');
   
@@ -40,6 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let searchTimeout = null;
   let currentPage = 1;
   let isLoadingMessages = false;
+  let replyToMessage = null;
+  let onlineUsers = new Set();
   
   // Создание звука уведомления
   try {
@@ -116,6 +134,12 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.emit('join_room', { room_id: roomId });
     document.querySelector(`li[data-room-id="${roomId}"]`)?.classList.add('active');
     
+    // Показываем окно чата
+    const chatContainer = document.getElementById('chat-container');
+    if (chatContainer) {
+      chatContainer.style.display = 'flex';
+    }
+    
     // Обновляем заголовок и кнопки
     roomTitle.textContent = roomName;
     
@@ -181,29 +205,198 @@ document.addEventListener('DOMContentLoaded', () => {
     msgDiv.classList.add('message', data.is_own ? 'sent' : 'received');
     msgDiv.dataset.messageId = data.id || '';
     
+    // Аватар и имя пользователя
     if (!data.is_own && data.user) {
       const userSpan = document.createElement('div');
       userSpan.classList.add('message-user');
-      userSpan.textContent = data.user;
+      userSpan.textContent = `${data.user_avatar || '👤'} ${data.user}`;
       msgDiv.appendChild(userSpan);
     }
     
+    // Ответ на сообщение
+    if (data.reply_to) {
+      const replyDiv = document.createElement('div');
+      replyDiv.classList.add('message-reply');
+      replyDiv.innerHTML = `
+        <div class="reply-indicator">↩️</div>
+        <div class="reply-content">
+          <div class="reply-user">${escapeHtml(data.reply_to.user)}</div>
+          <div class="reply-text">${escapeHtml(data.reply_to.text)}</div>
+        </div>
+      `;
+      replyDiv.addEventListener('click', () => {
+        const originalMsg = document.querySelector(`[data-message-id="${data.reply_to.id}"]`);
+        if (originalMsg) {
+          originalMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          originalMsg.classList.add('highlight');
+          setTimeout(() => originalMsg.classList.remove('highlight'), 2000);
+        }
+      });
+      msgDiv.appendChild(replyDiv);
+    }
+    
+    // Обработка упоминаний
+    let textContent = data.text;
+    const mentionRegex = /@(\w+)/g;
+    textContent = textContent.replace(mentionRegex, '<span class="mention">@$1</span>');
+    
     const textP = document.createElement('p');
     textP.classList.add('message-text');
-    textP.textContent = data.text;
+    textP.innerHTML = textContent;
     msgDiv.appendChild(textP);
     
+    // Реакции
+    const reactionsDiv = document.createElement('div');
+    reactionsDiv.classList.add('message-reactions');
+    reactionsDiv.dataset.messageId = data.id;
+    updateReactions(reactionsDiv, data.reactions || {});
+    msgDiv.appendChild(reactionsDiv);
+    
+    // Время и действия
+    const footerDiv = document.createElement('div');
+    footerDiv.classList.add('message-footer');
+    
     if (data.timestamp) {
-      const timeSpan = document.createElement('div');
+      const timeSpan = document.createElement('span');
       timeSpan.classList.add('message-time');
       timeSpan.textContent = data.timestamp;
-      msgDiv.appendChild(timeSpan);
+      footerDiv.appendChild(timeSpan);
     }
+    
+    // Кнопки действий
+    const actionsDiv = document.createElement('div');
+    actionsDiv.classList.add('message-actions');
+    
+    const replyBtn = document.createElement('button');
+    replyBtn.classList.add('action-btn');
+    replyBtn.innerHTML = '↩️';
+    replyBtn.title = 'Ответить';
+    replyBtn.addEventListener('click', () => setReplyTo(data));
+    actionsDiv.appendChild(replyBtn);
+    
+    const reactBtn = document.createElement('button');
+    reactBtn.classList.add('action-btn');
+    reactBtn.innerHTML = '👍';
+    reactBtn.title = 'Реакция';
+    reactBtn.addEventListener('click', (e) => showReactionPicker(e, data.id));
+    actionsDiv.appendChild(reactBtn);
+    
+    footerDiv.appendChild(actionsDiv);
+    msgDiv.appendChild(footerDiv);
     
     if (prepend) {
       messages.insertBefore(msgDiv, messages.firstChild);
     } else {
       messages.appendChild(msgDiv);
+    }
+  }
+  
+  // Обновление реакций
+  function updateReactions(container, reactions) {
+    container.innerHTML = '';
+    for (const [emoji, users] of Object.entries(reactions)) {
+      if (users.length > 0) {
+        const reactionBtn = document.createElement('button');
+        reactionBtn.classList.add('reaction-item');
+        reactionBtn.innerHTML = `${emoji} ${users.length}`;
+        reactionBtn.title = users.join(', ');
+        reactionBtn.addEventListener('click', () => {
+          const messageId = container.dataset.messageId;
+          reactToMessage(messageId, emoji);
+        });
+        container.appendChild(reactionBtn);
+      }
+    }
+  }
+  
+  // Установка ответа на сообщение
+  function setReplyTo(messageData) {
+    replyToMessage = messageData;
+    
+    // Показываем индикатор ответа
+    let replyIndicator = document.getElementById('reply-indicator');
+    if (!replyIndicator) {
+      replyIndicator = document.createElement('div');
+      replyIndicator.id = 'reply-indicator';
+      replyIndicator.classList.add('reply-indicator-bar');
+      document.getElementById('input-area').insertBefore(replyIndicator, input);
+    }
+    
+    replyIndicator.innerHTML = `
+      <div class="reply-info">
+        <span class="reply-label">↩️ Ответ на:</span>
+        <span class="reply-preview">${escapeHtml(messageData.user)}: ${escapeHtml(messageData.text.substring(0, 50))}</span>
+      </div>
+      <button class="cancel-reply" onclick="cancelReply()">✕</button>
+    `;
+    replyIndicator.style.display = 'flex';
+    input.focus();
+  }
+  
+  // Отмена ответа
+  window.cancelReply = function() {
+    replyToMessage = null;
+    const replyIndicator = document.getElementById('reply-indicator');
+    if (replyIndicator) {
+      replyIndicator.style.display = 'none';
+    }
+  };
+  
+  // Показать выбор реакций
+  function showReactionPicker(event, messageId) {
+    event.stopPropagation();
+    
+    // Удаляем предыдущий пикер
+    const existingPicker = document.querySelector('.reaction-picker');
+    if (existingPicker) existingPicker.remove();
+    
+    const picker = document.createElement('div');
+    picker.classList.add('reaction-picker');
+    
+    const emojis = ['👍', '❤️', '😂', '😮', '😢', '🔥', '👏', '🎉'];
+    emojis.forEach(emoji => {
+      const btn = document.createElement('button');
+      btn.textContent = emoji;
+      btn.addEventListener('click', () => {
+        reactToMessage(messageId, emoji);
+        picker.remove();
+      });
+      picker.appendChild(btn);
+    });
+    
+    document.body.appendChild(picker);
+    
+    const rect = event.target.getBoundingClientRect();
+    picker.style.position = 'fixed';
+    picker.style.top = `${rect.top - picker.offsetHeight - 5}px`;
+    picker.style.left = `${rect.left}px`;
+    
+    // Закрытие при клике вне пикера
+    setTimeout(() => {
+      document.addEventListener('click', function closePicker() {
+        picker.remove();
+        document.removeEventListener('click', closePicker);
+      });
+    }, 0);
+  }
+  
+  // Отправка реакции
+  async function reactToMessage(messageId, emoji) {
+    try {
+      const response = await fetch(`/api/messages/${messageId}/react`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ emoji })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to react');
+      }
+    } catch (error) {
+      console.error('Error reacting:', error);
+      showUserError('Ошибка добавления реакции');
     }
   }
   
@@ -226,14 +419,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     try {
-      socket.emit('send_message', { 
+      const messageData = { 
         text: text, 
         room_id: currentRoomId 
-      });
+      };
+      
+      // Добавляем reply_to_id если отвечаем на сообщение
+      if (replyToMessage) {
+        messageData.reply_to_id = replyToMessage.id;
+      }
+      
+      socket.emit('send_message', messageData);
       
       input.value = '';
       updateCharCount();
       sendButton.disabled = true;
+      
+      // Отменяем ответ
+      if (replyToMessage) {
+        cancelReply();
+      }
       
       socket.emit('typing', { room_id: currentRoomId, is_typing: false });
     } catch (error) {
@@ -297,6 +502,38 @@ document.addEventListener('DOMContentLoaded', () => {
       loadRoomMembers(currentRoomId);
     }
   });
+  
+  // Обновление реакций
+  socket.on('message_reaction', (data) => {
+    const reactionsContainer = document.querySelector(`[data-message-id="${data.message_id}"] .message-reactions`);
+    if (reactionsContainer) {
+      updateReactions(reactionsContainer, data.reactions);
+    }
+  });
+  
+  // Обновление статуса пользователей
+  socket.on('user_status', (data) => {
+    if (data.is_online) {
+      onlineUsers.add(data.username);
+    } else {
+      onlineUsers.delete(data.username);
+    }
+    
+    // Обновляем индикаторы онлайн статуса
+    updateOnlineIndicators();
+  });
+  
+  // Обновление индикаторов онлайн
+  function updateOnlineIndicators() {
+    document.querySelectorAll('.message-user').forEach(userEl => {
+      const username = userEl.textContent.split(' ').slice(1).join(' ');
+      if (onlineUsers.has(username)) {
+        userEl.classList.add('online');
+      } else {
+        userEl.classList.remove('online');
+      }
+    });
+  }
   
   function showSystemMessage(text) {
     const msgDiv = document.createElement('div');
@@ -398,51 +635,76 @@ document.addEventListener('DOMContentLoaded', () => {
     Notification.requestPermission();
   }
   
-  // === ФУНКЦИОНАЛ ПОИСКА И ГРУПП ===
+  // === ФУНКЦИОНАЛ ПРИГЛАШЕНИЯ И УЧАСТНИКОВ ===
   
   // Универсальная функция поиска пользователей
   function setupUserSearch(inputElement, resultsElement, onUserClick) {
+    if (!inputElement || !resultsElement) {
+      console.error('setupUserSearch: inputElement or resultsElement is null');
+      return;
+    }
+    
     inputElement.addEventListener('input', (e) => {
       const query = e.target.value.trim();
       
       clearTimeout(searchTimeout);
       
-      if (query.length < 2) {
-        resultsElement.innerHTML = '<div class="no-results">Введите минимум 2 символа</div>';
+      if (query.length === 0) {
+        resultsElement.innerHTML = '';
         return;
       }
       
-      resultsElement.innerHTML = '<div class="loading">Поиск...</div>';
+      if (query.length < 2) {
+        resultsElement.innerHTML = `<div class="no-results">${t('min_chars') || 'Введите минимум 2 символа'}</div>`;
+        return;
+      }
+      
+      resultsElement.innerHTML = `<div class="loading">${t('loading') || 'Загрузка...'}</div>`;
       
       searchTimeout = setTimeout(async () => {
         try {
           const response = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`);
-          const users = await response.json();
           
           if (!response.ok) {
-            throw new Error(users.error || 'Search failed');
+            const errorData = await response.json().catch(() => ({ error: 'Search failed' }));
+            throw new Error(errorData.error || `HTTP ${response.status}`);
+          }
+          
+          const users = await response.json();
+          
+          if (!Array.isArray(users)) {
+            throw new Error('Invalid response format');
           }
           
           if (users.length === 0) {
-            resultsElement.innerHTML = '<div class="no-results">Пользователи не найдены</div>';
+            resultsElement.innerHTML = `<div class="no-results">${t('no_results') || 'Пользователи не найдены'}</div>`;
             return;
           }
           
           resultsElement.innerHTML = '';
           users.forEach(user => {
+            if (!user || !user.id || !user.username) {
+              console.warn('Invalid user data:', user);
+              return;
+            }
+            
             const userDiv = document.createElement('div');
             userDiv.className = 'user-result';
             userDiv.innerHTML = `
               <span class="username">👤 ${escapeHtml(user.username)}</span>
-              <span class="action">${onUserClick.actionText}</span>
+              <span class="action">${onUserClick.actionText || 'Выбрать'}</span>
             `;
-            userDiv.addEventListener('click', () => onUserClick.handler(user));
+            userDiv.addEventListener('click', () => {
+              if (onUserClick && onUserClick.handler) {
+                onUserClick.handler(user);
+              }
+            });
             resultsElement.appendChild(userDiv);
           });
         } catch (error) {
           console.error('Search error:', error);
-          resultsElement.innerHTML = '<div class="no-results">Ошибка поиска</div>';
-          showUserError('Ошибка поиска пользователей');
+          resultsElement.innerHTML = `<div class="no-results">${t('error') || 'Ошибка'}</div>`;
+          showUserError(t('error_occurred') || 'Произошла ошибка при поиске');
         }
       }, 300);
     });
@@ -455,137 +717,42 @@ document.addEventListener('DOMContentLoaded', () => {
     return div.innerHTML;
   }
   
-  // Поиск пользователей для личного чата
-  searchUserBtn.addEventListener('click', () => {
-    openModal(searchModal);
-    document.getElementById('search-input').focus();
-  });
-  
-  setupUserSearch(
-    document.getElementById('search-input'),
-    document.getElementById('search-results'),
-    {
-      actionText: 'Написать',
-      handler: createPrivateChat
-    }
-  );
-  
-  async function createPrivateChat(user) {
-    try {
-      const response = await fetch(`/api/rooms/private/${user.id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }).catch(err => {
-        throw new Error('Ошибка сети: ' + err.message);
+  // Приглашение в группу
+  if (inviteBtn && inviteModal) {
+    const inviteSearchInput = document.getElementById('invite-search-input');
+    const inviteSearchResults = document.getElementById('invite-search-results');
+    
+    if (inviteSearchInput && inviteSearchResults) {
+      inviteBtn.addEventListener('click', () => {
+        // Очищаем поле ввода и результаты при открытии
+        inviteSearchInput.value = '';
+        inviteSearchResults.innerHTML = '';
+        openModal(inviteModal);
+        setTimeout(() => inviteSearchInput.focus(), 150);
       });
       
-      if (!response) {
-        throw new Error('Нет ответа от сервера');
-      }
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create chat');
-      }
-      
-      closeModal(searchModal);
-      
-      // Добавляем комнату в список, если её там нет
-      if (!data.existed) {
-        addRoomToList(data.room_id, data.room_name, false, true);
-      }
-      
-      // Переключаемся на комнату
-      switchRoom(data.room_id, data.room_name, false, true);
-      
-      if (!data.existed) {
-        showSystemMessage('Личный чат создан');
-      }
-    } catch (error) {
-      console.error('Error creating private chat:', error);
-      showUserError('Ошибка создания чата: ' + error.message);
+      setupUserSearch(
+        inviteSearchInput,
+        inviteSearchResults,
+        {
+          get actionText() { return t('invite'); },
+          handler: inviteUserToGroup
+        }
+      );
     }
   }
   
-  // Создание группы
-  createGroupBtn.addEventListener('click', () => {
-    openModal(groupModal);
-    document.getElementById('group-name-input').focus();
-  });
-  
-  const groupNameInput = document.getElementById('group-name-input');
-  const createGroupSubmit = document.getElementById('create-group-submit');
-  
-  createGroupSubmit.addEventListener('click', async () => {
-    const groupName = groupNameInput.value.trim();
-    
-    if (groupName.length < 3) {
-      showUserError('Название группы должно быть минимум 3 символа');
+  async function inviteUserToGroup(user) {
+    if (!user || !user.id) {
+      showUserError(t('error_occurred') || 'Неверные данные пользователя');
       return;
     }
     
-    try {
-      const response = await fetch('/api/rooms/group', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name: groupName })
-      }).catch(err => {
-        throw new Error('Ошибка сети: ' + err.message);
-      });
-      
-      if (!response) {
-        throw new Error('Нет ответа от сервера');
-      }
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create group');
-      }
-      
-      closeModal(groupModal);
-      groupNameInput.value = '';
-      
-      // Добавляем группу в список
-      addRoomToList(data.room_id, data.room_name, true, false);
-      
-      // Переключаемся на группу
-      switchRoom(data.room_id, data.room_name, true, false);
-      
-      showSystemMessage('Группа создана');
-    } catch (error) {
-      console.error('Error creating group:', error);
-      showUserError('Ошибка создания группы: ' + error.message);
+    if (!currentRoomId) {
+      showUserError(t('error_occurred') || 'Комната не выбрана');
+      return;
     }
-  });
-  
-  groupNameInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      createGroupSubmit.click();
-    }
-  });
-  
-  // Приглашение в группу
-  inviteBtn.addEventListener('click', () => {
-    openModal(inviteModal);
-    document.getElementById('invite-search-input').focus();
-  });
-  
-  setupUserSearch(
-    document.getElementById('invite-search-input'),
-    document.getElementById('invite-search-results'),
-    {
-      actionText: 'Пригласить',
-      handler: inviteUserToGroup
-    }
-  );
-  
-  async function inviteUserToGroup(user) {
+    
     try {
       const response = await fetch(`/api/rooms/${currentRoomId}/invite`, {
         method: 'POST',
@@ -608,25 +775,45 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       closeModal(inviteModal);
-      document.getElementById('invite-search-input').value = '';
-      document.getElementById('invite-search-results').innerHTML = '';
       
-      showSystemMessage(`${user.username} приглашен в группу`);
+      // Очищаем поле поиска
+      const inviteSearchInput = document.getElementById('invite-search-input');
+      const inviteSearchResults = document.getElementById('invite-search-results');
+      if (inviteSearchInput) inviteSearchInput.value = '';
+      if (inviteSearchResults) inviteSearchResults.innerHTML = '';
+      
+      showSystemMessage(`${user.username} ${t('invite') || 'приглашен в группу'}`);
     } catch (error) {
       console.error('Error inviting user:', error);
-      showUserError('Ошибка приглашения: ' + error.message);
+      showUserError(t('error_occurred') || 'Ошибка приглашения: ' + error.message);
     }
   }
   
   // Просмотр участников
-  membersBtn.addEventListener('click', async () => {
-    openModal(membersModal);
-    await loadRoomMembers(currentRoomId);
-  });
+  if (membersBtn && membersModal) {
+    membersBtn.addEventListener('click', async () => {
+      if (!currentRoomId) {
+        showUserError(t('error_occurred') || 'Комната не выбрана');
+        return;
+      }
+      openModal(membersModal);
+      await loadRoomMembers(currentRoomId);
+    });
+  }
   
   async function loadRoomMembers(roomId) {
     const membersList = document.getElementById('members-list');
-    membersList.innerHTML = '<div class="loading">Загрузка...</div>';
+    if (!membersList) {
+      console.error('loadRoomMembers: members-list element not found');
+      return;
+    }
+    
+    if (!roomId) {
+      membersList.innerHTML = `<div class="no-results">${t('error') || 'Ошибка'}</div>`;
+      return;
+    }
+    
+    membersList.innerHTML = `<div class="loading">${t('loading') || 'Загрузка...'}</div>`;
     
     try {
       const response = await fetch(`/api/rooms/${roomId}/members`).catch(err => {
@@ -643,20 +830,35 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(data.error || 'Failed to load members');
       }
       
+      if (!data.members || !Array.isArray(data.members)) {
+        throw new Error('Invalid response format');
+      }
+      
       membersList.innerHTML = '';
+      
+      if (data.members.length === 0) {
+        membersList.innerHTML = `<div class="no-results">${t('no_results') || 'Участники не найдены'}</div>`;
+        return;
+      }
+      
       data.members.forEach(member => {
+        if (!member || !member.username) {
+          console.warn('Invalid member data:', member);
+          return;
+        }
+        
         const memberDiv = document.createElement('div');
         memberDiv.className = 'member-item';
         memberDiv.innerHTML = `
-          <span class="username">👤 ${escapeHtml(member.username)}</span>
-          ${member.is_creator ? '<span class="badge">Создатель</span>' : ''}
+          <span class="username">${escapeHtml(member.avatar || '👤')} ${escapeHtml(member.username)}</span>
+          ${member.is_creator ? `<span class="badge">${t('creator') || 'Создатель'}</span>` : ''}
         `;
         membersList.appendChild(memberDiv);
       });
     } catch (error) {
       console.error('Error loading members:', error);
-      membersList.innerHTML = '<div class="no-results">Ошибка загрузки участников</div>';
-      showUserError('Ошибка загрузки участников');
+      membersList.innerHTML = `<div class="no-results">${t('error') || 'Ошибка'}</div>`;
+      showUserError(t('error_occurred') || 'Произошла ошибка при загрузке участников');
     }
   }
   
@@ -677,20 +879,47 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   // Управление модальными окнами
+  let modalOpening = false;
+  
   function openModal(modal) {
+    if (!modal) {
+      console.error('openModal: modal is null');
+      return;
+    }
+    
+    modalOpening = true;
     modal.classList.add('show');
     modal.setAttribute('aria-hidden', 'false');
+    
+    // Предотвращаем прокрутку body при открытом модальном окне
+    document.body.style.overflow = 'hidden';
     
     // Перемещаем фокус на первый input в модальном окне
     const firstInput = modal.querySelector('input');
     if (firstInput) {
-      setTimeout(() => firstInput.focus(), 100);
+      setTimeout(() => {
+        firstInput.focus();
+        modalOpening = false;
+      }, 150);
+    } else {
+      setTimeout(() => {
+        modalOpening = false;
+      }, 150);
     }
   }
   
   function closeModal(modal) {
+    if (!modal) {
+      console.error('closeModal: modal is null');
+      return;
+    }
+    
+    if (modalOpening) return; // Предотвращаем закрытие во время открытия
     modal.classList.remove('show');
     modal.setAttribute('aria-hidden', 'true');
+    
+    // Восстанавливаем прокрутку body
+    document.body.style.overflow = '';
   }
   
   // Закрытие модальных окон по клику на крестик
@@ -712,7 +941,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Закрытие модальных окон по клику вне контента
   document.querySelectorAll('.modal').forEach(modal => {
     modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
+      if (e.target === modal && !modalOpening) {
         closeModal(modal);
       }
     });
@@ -742,15 +971,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   
-  // Автоматическое присоединение к первой комнате
-  const firstRoom = roomsList.querySelector('li[data-room-id]');
-  if (firstRoom) {
-    const roomId = parseInt(firstRoom.dataset.roomId);
-    const isGroup = firstRoom.dataset.isGroup === 'true';
-    const isPrivate = firstRoom.dataset.isPrivate === 'true';
-    switchRoom(roomId, firstRoom.textContent.trim(), isGroup, isPrivate);
+  // Скрываем окно чата до выбора комнаты
+  const chatContainer = document.getElementById('chat-container');
+  if (chatContainer) {
+    chatContainer.style.display = 'none';
   }
   
-  input.focus();
+  // Автоматическое переключение на комнату при возврате с других страниц
+  if (typeof window.selectedRoomId !== 'undefined' && window.selectedRoomId) {
+    const roomElement = document.querySelector(`li[data-room-id="${window.selectedRoomId}"]`);
+    if (roomElement) {
+      const roomId = parseInt(roomElement.dataset.roomId);
+      const isGroup = roomElement.dataset.isGroup === 'true';
+      const isPrivate = roomElement.dataset.isPrivate === 'true';
+      const roomName = roomElement.textContent.trim();
+      
+      // Небольшая задержка для корректной инициализации
+      setTimeout(() => {
+        switchRoom(roomId, roomName, isGroup, isPrivate);
+      }, 100);
+    }
+  }
+  
   updateCharCount();
 });

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+  <div class="page-header">
+    <a href="{{ url_for('index') }}" class="back-btn">
+      <span>←</span>
+      <span data-i18n="back">{{ translations.back }}</span>
+    </a>
+    <h1 data-i18n="create_group_title">{{ translations.create_group_title }}</h1>
+  </div>
+
+  <div class="form-content">
+    <div class="form-group">
+      <label for="group-name-input" data-i18n="group_name">{{ translations.group_name }}</label>
+      <input 
+        type="text" 
+        id="group-name-input" 
+        placeholder="{{ translations.group_name_placeholder }}" 
+        data-i18n="group_name_placeholder" 
+        maxlength="100" 
+        autocomplete="off" 
+        aria-label="{{ translations.group_name }}"
+        autofocus
+      />
+    </div>
+    <button id="create-group-submit" class="btn-primary" aria-label="{{ translations.create_group }}" data-i18n="create_group">{{ translations.create_group }}</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.body.dataset.lang = '{{ user_lang }}';
+</script>
+<script src="{{ url_for('static', filename='js/create-group-page.js') }}"></script>
+{% endblock %}
