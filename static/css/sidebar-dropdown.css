@@ -1,0 +1,74 @@
+/* Выпадающие панели сайдбара: раскрытие по высоте сдвигает контент вниз плавно */
+
+.user-suggest-panel,
+.search-results {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  min-height: 0;
+  transition: grid-template-rows var(--duration-modal) var(--ease-modal);
+}
+
+.user-suggest-panel.sidebar-dropdown--enter,
+.search-results.sidebar-dropdown--enter {
+  grid-template-rows: 1fr;
+}
+
+.user-suggest-panel[hidden],
+.search-results[hidden] {
+  display: none !important;
+}
+
+.user-suggest-panel .sidebar-dropdown__body,
+.search-results .sidebar-dropdown__body {
+  min-height: 0;
+  overflow: hidden;
+  max-height: min(220px, 38vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: color-mix(in srgb, var(--glass-fill-elevated) 94%, var(--bg-deep));
+  backdrop-filter: blur(var(--blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  border: 1px solid var(--glass-border-bright);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-inset), 0 8px 24px rgba(0, 0, 0, 0.22);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity var(--duration-modal) var(--ease-modal),
+    transform var(--duration-modal) var(--ease-modal);
+}
+
+.user-suggest-panel.sidebar-dropdown--enter .sidebar-dropdown__body,
+.search-results.sidebar-dropdown--enter .sidebar-dropdown__body {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .user-suggest-panel,
+  .search-results {
+    transition: none;
+  }
+
+  .user-suggest-panel .sidebar-dropdown__body,
+  .search-results .sidebar-dropdown__body {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+.user-suggest-panel .sidebar-dropdown__body,
+.search-results .sidebar-dropdown__body {
+  background: var(--glass-liquid-panel);
+  border-color: var(--glass-liquid-border);
+  box-shadow:
+    var(--glass-liquid-inset),
+    0 18px 44px rgba(0, 0, 0, 0.24),
+    var(--glass-liquid-chromatic-edge);
+  backdrop-filter: blur(var(--glass-liquid-blur-support)) saturate(var(--glass-liquid-saturate))
+    brightness(var(--glass-liquid-brightness));
+  -webkit-backdrop-filter: blur(var(--glass-liquid-blur-support)) saturate(var(--glass-liquid-saturate))
+    brightness(var(--glass-liquid-brightness));
+}

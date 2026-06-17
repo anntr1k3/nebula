@@ -1,0 +1,2 @@
+# cmd.exe: CRLF; .bat — UTF-8 без BOM (BOM ломает @echo off), в скриптах chcp 65001
+*.bat text eol=crlf working-tree-encoding=UTF-8

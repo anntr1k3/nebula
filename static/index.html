@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    (function () {
+      try {
+        var L = localStorage.getItem('language')
+        document.documentElement.lang = (L === 'ru' || L === 'en') ? L : 'ru'
+      } catch (e) {}
+    })()
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0c1220" id="meta-theme-color">
+  <title>Небула</title>
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png?v=nebula-logo-1">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=nebula-logo-1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=nebula-logo-1">
+  <link rel="manifest" href="/site.webmanifest?v=nebula-logo-1">
+  <link rel="preload" href="/css/inter-local.css?v=nebula-9" as="style">
+  <link rel="stylesheet" href="/css/inter-local.css?v=nebula-9">
+  <link rel="stylesheet" href="/css/fontawesome-subset.css?v=nebula-3">
+  <link rel="stylesheet" href="/css/main.css?v=nebula-18">
+  <script type="application/json" id="nebula-theme-bootstrap">{"ids":["dark","dark-midnight","dark-forest","light","light-warm","light-frost"],"meta":{"dark":"#0c1220","dark-midnight":"#0a0614","dark-forest":"#050d0a","light":"#e8ecf4","light-warm":"#ebe4d8","light-frost":"#eef8ff"}}</script>
+</head>
+<body>
+  <svg class="nebula-svg-filters" width="0" height="0" aria-hidden="true" focusable="false">
+    <defs>
+      <!-- Радиальная «линза»: искажение фона за стеклом (feDisplacementMap) -->
+      <filter id="nebula-liquid-refract" x="-18%" y="-18%" width="136%" height="136%" color-interpolation-filters="sRGB">
+        <feImage
+          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cdefs%3E%3CradialGradient id='l' cx='50%25' cy='46%25' r='52%25'%3E%3Cstop offset='0%25' stop-color='%237a7a7a'/%3E%3Cstop offset='38%25' stop-color='%23828282'/%3E%3Cstop offset='58%25' stop-color='%236e6e6e'/%3E%3Cstop offset='78%25' stop-color='%23969696'/%3E%3Cstop offset='100%25' stop-color='%235a5a5a'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='256' height='256' fill='url(%23l)'/%3E%3C/svg%3E"
+          result="lensMap"
+          preserveAspectRatio="none" />
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="lensMap"
+          scale="16"
+          xChannelSelector="R"
+          yChannelSelector="G"
+          result="refracted" />
+        <feColorMatrix
+          in="refracted"
+          type="matrix"
+          values="1.04 0 0 0 0  0 1.02 0 0 0  0 0 1.07 0 0  0 0 0 1 0" />
+      </filter>
+    </defs>
+  </svg>
+  <script>
+    (function () {
+      var boot = { ids: ['dark', 'dark-midnight', 'dark-forest', 'light', 'light-warm', 'light-frost'], meta: { dark: '#0c1220', 'dark-midnight': '#0a0614', 'dark-forest': '#050d0a', light: '#e8ecf4', 'light-warm': '#ebe4d8', 'light-frost': '#eef8ff' } }
+      var el = document.getElementById('nebula-theme-bootstrap')
+      if (el) {
+        try {
+          var p = JSON.parse(el.textContent)
+          if (p.ids && p.meta) boot = p
+        } catch (e) {}
+      }
+      var ids = boot.ids
+      var colors = boot.meta
+      var th = localStorage.getItem('theme') || 'dark'
+      if (ids.indexOf(th) < 0) th = th === 'light' ? 'light' : 'dark'
+      document.body.dataset.theme = th
+      document.body.className = th.indexOf('light') === 0 ? 'light-theme' : 'dark-theme'
+      var m = document.getElementById('meta-theme-color')
+      if (m) m.setAttribute('content', colors[th] || '#0c1220')
+    })()
+  </script>
+  <div id="app-root">
+    <div id="view-auth" class="screen" hidden>
+      <div class="auth-container liquid-auth-card">
+        <img class="logo-mark" src="/assets/logo-nebula-512.png?v=nebula-logo-1" width="96" height="96" alt="" aria-hidden="true" decoding="async" fetchpriority="high">
+        <h1 class="logo" data-i18n="appTitle"></h1>
+        <div id="auth-login" class="auth-form active">
+          <h2 data-i18n="loginTitle"></h2>
+          <input id="login-user" type="text" class="glass-input" data-i18n-placeholder="usernamePlaceholder">
+          <input id="login-pass" type="password" class="glass-input" data-i18n-placeholder="passwordPlaceholder">
+          <button type="button" class="glass-button" id="btn-login" data-i18n="loginButton"></button>
+          <p class="switch-auth">
+            <span data-i18n="noAccount"></span>
+            <button type="button" class="link" id="link-to-register" data-i18n="registerLink"></button>
+          </p>
+        </div>
+
+        <div id="auth-register" class="auth-form">
+          <h2 data-i18n="registerTitle"></h2>
+          <input id="reg-user" type="text" class="glass-input" data-i18n-placeholder="usernamePlaceholder">
+          <input
+            id="reg-pass"
+            type="password"
+            class="glass-input"
+            data-i18n-placeholder="passwordPlaceholder"
+            aria-describedby="register-password-rules"
+            autocomplete="new-password"
+          >
+          <div
+            id="register-password-rules"
+            class="auth-password-rules"
+            role="region"
+            aria-labelledby="register-password-rules-heading"
+          >
+            <div
+              id="register-password-rules-heading"
+              class="auth-password-rules-title"
+              data-i18n="passwordRulesTitle"
+            ></div>
+            <ul class="auth-password-rules-list">
+              <li data-password-rule="min-len" data-i18n="passwordMinLength"></li>
+              <li data-password-rule="max-len" data-i18n="passwordTooLong"></li>
+              <li data-password-rule="letter" data-i18n="passwordNeedLetter"></li>
+              <li data-password-rule="digit" data-i18n="passwordNeedDigit"></li>
+            </ul>
+          </div>
+          <button type="button" class="glass-button" id="btn-register" data-i18n="registerButton"></button>
+          <p class="switch-auth">
+            <span data-i18n="haveAccount"></span>
+            <button type="button" class="link" id="link-to-login" data-i18n="loginLink"></button>
+          </p>
+        </div>
+      </div>
+
+      <div class="auth-quick-bar" id="auth-quick-bar" role="toolbar" data-i18n-aria="appearanceAria">
+        <button
+          type="button"
+          id="auth-btn-locale"
+          class="auth-quick-btn"
+          data-i18n-title="languageLabel"
+          data-i18n-aria="languageLabel"
+        >
+          <span id="auth-locale-display" aria-hidden="true">RU</span>
+        </button>
+        <button
+          type="button"
+          id="auth-btn-theme"
+          class="auth-quick-btn"
+          aria-haspopup="listbox"
+          aria-expanded="false"
+          aria-controls="auth-theme-popover"
+          data-i18n-title="appearanceAria"
+          data-i18n-aria="appearanceAria"
+        >
+          <i id="auth-theme-icon" class="fa-solid fa-moon" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div id="auth-theme-popover" class="auth-quick-popover auth-quick-popover--theme" hidden role="listbox" aria-labelledby="auth-btn-theme">
+        <p class="auth-quick-popover-label" data-i18n="darkTheme"></p>
+        <div class="auth-quick-theme-grid">
+          <button type="button" class="auth-quick-popover-option theme-option" data-theme="dark" data-i18n="themeDarkNebula" role="option"></button>
+          <button type="button" class="auth-quick-popover-option theme-option" data-theme="dark-midnight" data-i18n="themeDarkMidnight" role="option"></button>
+          <button type="button" class="auth-quick-popover-option theme-option" data-theme="dark-forest" data-i18n="themeDarkForest" role="option"></button>
+        </div>
+        <p class="auth-quick-popover-label" data-i18n="lightTheme"></p>
+        <div class="auth-quick-theme-grid">
+          <button type="button" class="auth-quick-popover-option theme-option" data-theme="light" data-i18n="themeLightDay" role="option"></button>
+          <button type="button" class="auth-quick-popover-option theme-option" data-theme="light-warm" data-i18n="themeLightWarm" role="option"></button>
+          <button type="button" class="auth-quick-popover-option theme-option" data-theme="light-frost" data-i18n="themeLightFrost" role="option"></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-messenger" class="messenger-container nebula-shell" hidden>
+      <aside class="sidebar liquid-sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-header-top">
+            <div
+              id="sidebar-user-profile"
+              class="user-profile"
+              role="button"
+              tabindex="0"
+              data-i18n-aria="editProfile"
+            >
+              <div id="sidebar-user-avatar" class="user-avatar" aria-hidden="true"><i class="fa-solid fa-user"></i></div>
+              <div class="user-info">
+                <h2 id="messenger-username"></h2>
+                <span class="edit-hint" data-i18n="editProfile"></span>
+              </div>
+            </div>
+            <div class="header-buttons">
+              <button
+                type="button"
+                id="btn-app-settings"
+                class="glass-button-small icon-only-btn"
+                data-i18n-title="settingsModalTitle"
+                data-i18n-aria="settingsModalTitle"
+              >
+                <i class="fa-solid fa-gear" aria-hidden="true"></i>
+              </button>
+              <button type="button" id="btn-admin" class="glass-button-small icon-only-btn" hidden data-i18n-title="modPanelTitle" data-i18n-aria="modPanelTitle"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></button>
+              <button type="button" id="btn-logout" class="glass-button-small" data-i18n="logoutButton"></button>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-chats" class="tab-content active sidebar-chats-only">
+          <div class="start-chat-section user-suggest-wrap">
+            <input id="new-chat-user" type="text" class="glass-input" data-i18n-placeholder="enterUsernamePlaceholder" autocomplete="off" aria-autocomplete="list" aria-controls="new-chat-suggestions" aria-expanded="false">
+            <div id="new-chat-suggestions" class="user-suggest-panel" hidden>
+              <div class="sidebar-dropdown__body" role="listbox"></div>
+            </div>
+          </div>
+          <button type="button" class="glass-button create-room-btn" id="btn-open-create-room" data-i18n="createGroupButton"></button>
+          <div class="search-section">
+            <label class="visually-hidden" for="global-search-input" data-i18n="searchPlaceholder"></label>
+            <input id="global-search-input" type="search" class="glass-input" data-i18n-placeholder="searchPlaceholder" autocomplete="off">
+            <div id="search-results" class="search-results" hidden>
+              <div class="sidebar-dropdown__body"></div>
+            </div>
+          </div>
+          <div class="recent-chats-divider"><span data-i18n="chatsList"></span></div>
+          <div id="inbox-list" class="inbox-list" role="list"></div>
+          <p id="inbox-empty" class="no-groups" hidden data-i18n="noChatsYet"></p>
+        </div>
+      </aside>
+
+      <main class="chat-area liquid-main">
+        <div id="no-chat" class="no-chat">
+          <div class="no-chat-visual" aria-hidden="true">
+            <img class="no-chat-logo" src="/assets/logo-nebula-512.png?v=nebula-logo-1" alt="" decoding="async">
+          </div>
+          <p class="no-chat-text" data-i18n="selectChat"></p>
+          <p class="no-chat-hint" data-i18n="selectChatHint"></p>
+        </div>
+        <div id="chat-panel" class="chat-container" hidden>
+          <div class="chat-header liquid-chat-header">
+            <div class="chat-header-title-wrap">
+              <button
+                type="button"
+                id="btn-chat-back"
+                class="glass-button-small icon-only-btn chat-back-btn"
+                data-i18n-title="backToChatsList"
+                data-i18n-aria="backToChatsList"
+              >
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+              </button>
+              <h3 id="chat-title"></h3>
+            </div>
+            <div
+              id="chat-header-notice"
+              class="chat-header-notice"
+              hidden
+              role="status"
+              aria-live="polite"
+            ></div>
+            <div class="chat-header-actions" id="chat-header-actions" hidden>
+              <button
+                type="button"
+                class="glass-button-small icon-only-btn chat-scheduled-btn"
+                id="btn-chat-scheduled"
+                hidden
+                data-i18n-title="scheduledListOpen"
+                data-i18n-aria="scheduledListOpen"
+              >
+                <i class="fa-solid fa-clock" aria-hidden="true"></i>
+                <span id="chat-scheduled-count" class="chat-scheduled-count" hidden></span>
+              </button>
+              <button type="button" class="glass-button-small icon-only-btn" id="btn-chat-dnd" data-i18n-title="chatDndTitle" data-i18n-aria="chatDndTitle"><i class="fa-solid fa-bell-slash" aria-hidden="true"></i></button>
+              <button type="button" class="glass-button-small icon-only-btn" id="btn-chat-local-search" data-i18n-title="searchInChat" data-i18n-aria="searchInChat"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></button>
+            </div>
+          </div>
+          <div id="local-search-panel" class="local-search-panel" hidden>
+            <input type="search" id="local-search-input" class="glass-input" data-i18n-placeholder="searchInChatPlaceholder" autocomplete="off">
+            <div id="local-search-results" class="local-search-results"></div>
+          </div>
+          <div id="pinned-strip" class="pinned-strip" hidden></div>
+          <div id="typing-bar" class="typing-bar" hidden aria-live="polite"></div>
+          <div class="messages-area">
+            <div
+              id="messages-load-older"
+              class="messages-load-older"
+              hidden
+              role="status"
+              aria-live="polite"
+            >
+              <i class="fa-solid fa-spinner fa-spin messages-load-older-icon" aria-hidden="true"></i>
+              <span class="messages-load-older-text" data-i18n="loadOlderBusy"></span>
+            </div>
+            <div id="chat-empty-state" class="chat-empty-state" hidden>
+              <div class="chat-empty-visual" aria-hidden="true">
+                <img class="chat-empty-logo" src="/assets/logo-nebula-512.png?v=nebula-logo-1" alt="" decoding="async">
+              </div>
+              <p class="chat-empty-text" data-i18n="chatEmptyMessages"></p>
+            </div>
+            <div id="messages-container" class="messages-container" role="log" aria-relevant="additions"></div>
+          </div>
+          <div class="composer-outer" id="composer-outer">
+            <div id="reply-preview" class="reply-preview" hidden>
+              <div class="reply-preview-inner">
+                <span class="reply-preview-label" data-i18n="replyTo"></span>
+                <span id="reply-preview-text"></span>
+              </div>
+              <button type="button" class="reply-preview-close" id="btn-cancel-reply" data-i18n="cancelReply"></button>
+            </div>
+            <div id="composer-media-preview" class="composer-media-preview" hidden>
+              <div class="composer-media-preview-lead">
+                <img id="composer-media-preview-thumb" class="composer-media-preview-thumb" alt="" hidden />
+                <span id="composer-media-preview-icon" class="composer-media-preview-icon" aria-hidden="true">
+                  <i class="fa-solid fa-paperclip"></i>
+                </span>
+              </div>
+              <span id="composer-media-preview-label" class="composer-media-preview-label"></span>
+              <button
+                type="button"
+                class="composer-media-preview-remove"
+                id="btn-clear-pending-media"
+                data-i18n-title="attachPreviewRemove"
+                data-i18n-aria="attachPreviewRemove"
+              >
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+              </button>
+            </div>
+            <div class="composer-toolbar" id="composer-toolbar">
+              <div class="composer-ttl-wrap" id="composer-ttl-wrap">
+                <i class="fa-solid fa-hourglass-half composer-ttl-icon" aria-hidden="true"></i>
+                <label class="composer-ttl-label">
+                  <span class="composer-ttl-text" data-i18n="disappearingLabel"></span>
+                  <span class="composer-select-shell">
+                    <button
+                      type="button"
+                      id="ttl-select-trigger"
+                      class="composer-select-trigger"
+                      aria-haspopup="listbox"
+                      aria-expanded="false"
+                      aria-controls="ttl-popover"
+                    >
+                      <span id="ttl-select-display"></span>
+                      <i class="fa-solid fa-chevron-down composer-select-chevron" aria-hidden="true"></i>
+                    </button>
+                    <select id="ttl-select" class="visually-hidden" tabindex="-1" aria-hidden="true">
+                      <option value="" data-i18n-opt="ttlOff"></option>
+                      <option value="5" data-i18n-opt="ttlDur5s"></option>
+                      <option value="60" data-i18n-opt="ttlDur1m"></option>
+                      <option value="3600" data-i18n-opt="ttlDur1h"></option>
+                      <option value="86400" data-i18n-opt="ttlDur24h"></option>
+                    </select>
+                  </span>
+                </label>
+              </div>
+              <div class="composer-toolbar-actions">
+                <button type="button" class="composer-action-btn" id="btn-voice-record" data-i18n-title="voiceRecordTitle" data-i18n-aria="voiceRecordTitle">
+                  <i class="fa-solid fa-microphone" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="composer-action-btn composer-action-btn--schedule" id="btn-schedule-send" data-i18n-title="scheduleSendTitle" data-i18n-aria="scheduleSendTitle">
+                  <i class="fa-solid fa-clock" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="composer-action-btn composer-action-btn--ai composer-action-btn--ai-off" id="btn-ai-assist" data-i18n-title="aiAssistTitle" data-i18n-aria="aiAssistTitle" aria-haspopup="listbox" aria-expanded="false" aria-controls="ai-assist-popover" aria-disabled="true">
+                  <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+            <div class="message-input-container liquid-composer">
+              <input type="file" id="file-attach-input" class="visually-hidden" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.zip">
+              <button type="button" class="composer-attach" id="btn-attach" data-i18n-title="attachFile" data-i18n-aria="attachFile"><i class="fa-solid fa-paperclip" aria-hidden="true"></i></button>
+              <div
+                id="message-input"
+                class="glass-input message-textarea composer-field composer-input-editable"
+                contenteditable="true"
+                role="textbox"
+                aria-multiline="true"
+                spellcheck="false"
+                data-i18n-placeholder="messagePlaceholder"
+                data-empty="true"
+              ></div>
+              <button type="button" class="composer-send" id="btn-send" disabled data-i18n-title="sendButton" data-i18n-aria="sendButton"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div id="view-admin" class="admin-container" hidden>
+      <aside class="admin-sidebar liquid-sidebar">
+        <div class="admin-header">
+          <h1 class="admin-title-row"><i class="fa-solid fa-shield-halved admin-title-icon" aria-hidden="true"></i><span data-i18n="adminTitle"></span></h1>
+          <div class="admin-user"><span id="admin-username"></span></div>
+        </div>
+        <nav class="admin-nav"></nav>
+        <div class="admin-footer">
+          <button type="button" class="glass-button-secondary admin-back-btn" id="btn-back-messenger"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span data-i18n="backToMessenger"></span></button>
+        </div>
+      </aside>
+      <main class="admin-content" id="admin-main">
+        <section class="admin-section" id="admin-reports-section">
+          <h2 data-i18n="adminReportsTitle"></h2>
+          <div class="admin-toolbar">
+            <label><span data-i18n="sortLabel"></span>
+              <select id="admin-report-sort" class="glass-input">
+                <option value="date" data-i18n="sortByDate"></option>
+                <option value="type" data-i18n="sortByType"></option>
+              </select>
+            </label>
+            <button type="button" class="glass-button-secondary" id="admin-reports-refresh" data-i18n="refresh"></button>
+          </div>
+          <div id="admin-reports-list" class="admin-reports-list"></div>
+        </section>
+        <section class="admin-section" id="admin-logs-section">
+          <h2 data-i18n="adminLogsTitle"></h2>
+          <div id="admin-logs-list" class="admin-logs-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <div id="modal-profile-edit" class="modal modal--smooth" hidden role="dialog" aria-modal="true" aria-labelledby="modal-profile-title">
+      <div class="modal-content liquid-modal-card">
+        <h2 id="modal-profile-title" data-i18n="profileModalTitle"></h2>
+        <label class="settings-label" for="profile-nickname" data-i18n="profileNickname"></label>
+        <input id="profile-nickname" type="text" class="glass-input" maxlength="64" autocomplete="nickname">
+        <label class="settings-label" for="profile-bio" data-i18n="profileBio"></label>
+        <textarea id="profile-bio" class="glass-input glass-textarea" rows="3" maxlength="500"></textarea>
+        <label class="settings-label" data-i18n="profileAvatar"></label>
+        <div class="profile-avatar-editor">
+          <div id="profile-avatar-preview" class="profile-avatar-preview" aria-hidden="true"></div>
+          <div class="profile-avatar-actions">
+            <input
+              id="profile-avatar-file"
+              type="file"
+              class="visually-hidden"
+              accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
+            />
+            <button type="button" id="btn-profile-avatar-upload" class="glass-button-secondary" data-i18n="avatarChooseFile"></button>
+            <button type="button" id="btn-profile-avatar-clear" class="glass-button-secondary" hidden data-i18n="avatarRemoveImage"></button>
+          </div>
+        </div>
+        <p class="profile-avatar-hint settings-hint" data-i18n="profileAvatarHint"></p>
+        <div id="profile-emoji-wrap">
+          <label class="settings-label" for="profile-avatar" data-i18n="profileAvatarEmoji"></label>
+          <div
+            id="profile-avatar"
+            class="glass-input profile-avatar-emoji-field"
+            contenteditable="true"
+            role="textbox"
+            aria-multiline="false"
+            spellcheck="false"
+            data-i18n-placeholder="profileAvatarEmoji"
+            data-empty="true"
+          ></div>
+        </div>
+        <div class="modal-buttons modal-buttons--profile-compact">
+          <button type="button" class="glass-button" id="btn-save-profile" data-i18n="saveProfile"></button>
+          <button type="button" class="glass-button-secondary" id="btn-profile-modal-cancel" data-i18n="cancelButton"></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal-app-settings" class="modal modal--smooth" hidden role="dialog" aria-modal="true" aria-labelledby="modal-app-settings-title">
+      <div class="modal-content liquid-modal-card settings-modal-card">
+        <h2 id="modal-app-settings-title" data-i18n="settingsModalTitle"></h2>
+        <p class="settings-modal-hint" data-i18n="settingsModalHint"></p>
+
+        <h3 id="settings-lang-heading" class="settings-section-title" data-i18n="languageLabel"></h3>
+        <div class="theme-selector settings-lang-row" role="group" aria-labelledby="settings-lang-heading">
+          <button type="button" class="language-option" data-locale="en">EN</button>
+          <button type="button" class="language-option" data-locale="ru">RU</button>
+        </div>
+
+        <h3 id="settings-theme-heading" class="settings-section-title" data-i18n="appearanceAria"></h3>
+        <p class="settings-theme-family" data-i18n="darkTheme"></p>
+        <div class="theme-selector settings-theme-row" role="group" aria-labelledby="settings-theme-heading">
+          <button type="button" class="theme-option" data-theme="dark" data-i18n="themeDarkNebula"></button>
+          <button type="button" class="theme-option" data-theme="dark-midnight" data-i18n="themeDarkMidnight"></button>
+          <button type="button" class="theme-option" data-theme="dark-forest" data-i18n="themeDarkForest"></button>
+        </div>
+        <p class="settings-theme-family" data-i18n="lightTheme"></p>
+        <div class="theme-selector settings-theme-row">
+          <button type="button" class="theme-option" data-theme="light" data-i18n="themeLightDay"></button>
+          <button type="button" class="theme-option" data-theme="light-warm" data-i18n="themeLightWarm"></button>
+          <button type="button" class="theme-option" data-theme="light-frost" data-i18n="themeLightFrost"></button>
+        </div>
+
+        <h3 class="settings-section-title" data-i18n="blockedUsers"></h3>
+        <div class="settings-modal-block-stack">
+          <input id="block-username-input" type="text" class="glass-input" data-i18n-placeholder="blockUserHint" autocomplete="off">
+          <button type="button" class="glass-button glass-button--danger settings-modal-stacked-btn" id="btn-block-user" data-i18n="blockButton"></button>
+          <button type="button" class="glass-button-secondary settings-modal-stacked-btn" id="btn-app-settings-done" data-i18n="closeButton"></button>
+        </div>
+        <div id="blocked-list" class="blocked-list"></div>
+      </div>
+    </div>
+
+    <div id="modal-create-room" class="modal modal--smooth" hidden role="dialog" aria-modal="true" aria-labelledby="modal-create-room-title">
+      <div class="modal-content liquid-modal-card">
+        <h2 id="modal-create-room-title" data-i18n="createGroupTitle"></h2>
+        <input id="new-room-name" type="text" class="glass-input" data-i18n-placeholder="groupNamePlaceholder">
+        <div class="members-selection">
+          <h3 data-i18n="selectMembers"></h3>
+          <input id="members-search" type="search" class="glass-input members-filter-input" data-i18n-placeholder="membersFilterPlaceholder" autocomplete="off">
+          <div id="members-list" class="members-list"></div>
+        </div>
+        <div class="modal-buttons">
+          <button type="button" class="glass-button" id="btn-create-room-submit" data-i18n="createButton"></button>
+          <button type="button" class="glass-button-secondary" id="btn-create-room-cancel" data-i18n="cancelButton"></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="ttl-popover" class="composer-float composer-float--ttl" hidden role="listbox" aria-labelledby="ttl-select-trigger"></div>
+
+    <div
+      id="schedule-popover"
+      class="composer-float composer-float--schedule"
+      hidden
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="schedule-popover-title"
+    >
+      <div class="composer-float-header" id="schedule-popover-title">
+        <i class="fa-solid fa-clock" aria-hidden="true"></i>
+        <span data-i18n="scheduleSendTitle"></span>
+      </div>
+      <label class="composer-float-label" for="schedule-datetime-input"><span data-i18n="scheduleDatetimeLabel"></span></label>
+      <input type="datetime-local" id="schedule-datetime-input" class="glass-input composer-float-input" />
+      <div class="composer-float-actions composer-float-actions--schedule">
+        <button type="button" class="glass-button" id="schedule-confirm" data-i18n="scheduleConfirm"></button>
+        <button type="button" class="glass-button-secondary" id="schedule-cancel" data-i18n="cancelButton"></button>
+      </div>
+    </div>
+
+    <div
+      id="ai-assist-popover"
+      class="composer-float composer-float--ai"
+      hidden
+      role="listbox"
+      aria-labelledby="btn-ai-assist"
+    ></div>
+
+    <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+
+    <div
+      id="modal-delete-message"
+      class="modal modal--smooth"
+      hidden
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="modal-delete-message-title"
+      aria-describedby="modal-delete-message-desc"
+    >
+      <div class="modal-content liquid-modal-card">
+        <h2 id="modal-delete-message-title" data-i18n="deleteMessageModalTitle"></h2>
+        <p id="modal-delete-message-desc" class="settings-modal-hint" data-i18n="deleteMessageModalBody"></p>
+        <div class="modal-buttons">
+          <button type="button" class="glass-button glass-button--danger" id="btn-delete-message-confirm" data-i18n="deleteMessageConfirm"></button>
+          <button type="button" class="glass-button-secondary" id="btn-delete-message-cancel" data-i18n="cancelButton"></button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="modal-report-message"
+      class="modal modal--smooth"
+      hidden
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-report-message-title"
+    >
+      <div class="modal-content liquid-modal-card">
+        <h2 id="modal-report-message-title" data-i18n="reportMessageModalTitle"></h2>
+        <p class="settings-modal-hint" data-i18n="reportMessageModalBody"></p>
+        <textarea
+          id="report-message-input"
+          class="glass-input edit-message-textarea"
+          rows="4"
+          data-i18n-placeholder="reportReasonPrompt"
+        ></textarea>
+        <div class="modal-buttons">
+          <button type="button" class="glass-button glass-button--danger" id="btn-report-message-confirm" data-i18n="reportMessageSubmit"></button>
+          <button type="button" class="glass-button-secondary" id="btn-report-message-cancel" data-i18n="cancelButton"></button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="modal-pinned-list"
+      class="modal modal--smooth"
+      hidden
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-pinned-list-title"
+    >
+      <div class="modal-content liquid-modal-card modal-pinned-card">
+        <h2 id="modal-pinned-list-title" data-i18n="pinnedListModalTitle"></h2>
+        <div id="pinned-modal-list" class="pinned-modal-list" role="list"></div>
+        <div class="modal-buttons">
+          <button type="button" class="glass-button-secondary" id="btn-pinned-list-close" data-i18n="closeButton"></button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="modal-edit-message"
+      class="modal modal--smooth"
+      hidden
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-edit-message-title"
+    >
+      <div class="modal-content liquid-modal-card">
+        <h2 id="modal-edit-message-title" data-i18n="editMessageModalTitle"></h2>
+        <textarea
+          id="edit-message-input"
+          class="glass-input edit-message-textarea"
+          rows="4"
+          data-i18n-placeholder="editMessagePlaceholder"
+        ></textarea>
+        <div class="edit-ai-section edit-ai-section--off" id="edit-ai-section">
+          <p class="edit-ai-label" data-i18n="aiAssistInEdit"></p>
+          <div id="edit-ai-toolbar" class="edit-ai-toolbar" role="group" data-i18n-aria="aiAssistTitle"></div>
+        </div>
+        <div class="modal-buttons">
+          <button type="button" class="glass-button" id="btn-edit-message-confirm" data-i18n="saveEdit"></button>
+          <button type="button" class="glass-button-secondary" id="btn-edit-message-cancel" data-i18n="cancelButton"></button>
+        </div>
+      </div>
+    </div>
+
+
+    <div
+      id="modal-scheduled-list"
+      class="modal modal--smooth"
+      hidden
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-scheduled-list-title"
+    >
+      <div class="modal-content liquid-modal-card modal-scheduled-card">
+        <h2 id="modal-scheduled-list-title" data-i18n="scheduledListModalTitle"></h2>
+        <div id="scheduled-list" class="scheduled-list" role="list"></div>
+        <p id="scheduled-list-empty" class="scheduled-list-empty settings-modal-hint" hidden data-i18n="scheduledListEmpty"></p>
+        <div class="modal-buttons">
+          <button type="button" class="glass-button-secondary" id="btn-scheduled-list-close" data-i18n="closeButton"></button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="modal-edit-scheduled"
+      class="modal modal--smooth"
+      hidden
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-edit-scheduled-title"
+    >
+      <div class="modal-content liquid-modal-card">
+        <h2 id="modal-edit-scheduled-title" data-i18n="editScheduledModalTitle"></h2>
+        <textarea
+          id="edit-scheduled-input"
+          class="glass-input edit-message-textarea"
+          rows="4"
+          data-i18n-placeholder="editMessagePlaceholder"
+        ></textarea>
+        <label class="composer-float-label" for="edit-scheduled-datetime"
+          ><span data-i18n="scheduleDatetimeLabel"></span
+        ></label>
+        <input type="datetime-local" id="edit-scheduled-datetime" class="glass-input composer-float-input" />
+        <div class="modal-buttons">
+          <button type="button" class="glass-button" id="btn-edit-scheduled-confirm" data-i18n="saveEdit"></button>
+          <button type="button" class="glass-button-secondary" id="btn-edit-scheduled-cancel" data-i18n="cancelButton"></button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="modal-delete-scheduled"
+      class="modal modal--smooth"
+      hidden
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="modal-delete-scheduled-title"
+      aria-describedby="modal-delete-scheduled-desc"
+    >
+      <div class="modal-content liquid-modal-card">
+        <h2 id="modal-delete-scheduled-title" data-i18n="deleteScheduledModalTitle"></h2>
+        <p id="modal-delete-scheduled-desc" class="settings-modal-hint" data-i18n="deleteScheduledModalBody"></p>
+        <div class="modal-buttons">
+          <button type="button" class="glass-button glass-button--danger" id="btn-delete-scheduled-confirm" data-i18n="deleteMessageConfirm"></button>
+          <button type="button" class="glass-button-secondary" id="btn-delete-scheduled-cancel" data-i18n="cancelButton"></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="ctx-menu" class="ctx-menu" hidden role="menu"></div>
+    <div id="emoji-picker-backdrop" class="emoji-picker-backdrop" hidden aria-hidden="true"></div>
+    <div id="emoji-bar" class="emoji-bar" hidden role="toolbar"></div>
+    <div
+      id="emoji-picker-expanded"
+      class="emoji-picker-expanded"
+      hidden
+      role="dialog"
+      aria-modal="true"
+      data-i18n-aria="emojiPickerTitle"
+    ></div>
+  </div>
+
+  <div
+    id="media-viewer"
+    class="media-viewer"
+    hidden
+    role="dialog"
+    aria-modal="true"
+  >
+    <button type="button" class="media-viewer__close" id="media-viewer-close" aria-keyshortcuts="Escape">
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+    </button>
+    <div class="media-viewer__stage"></div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
+  <script type="module" src="/js/app.js?v=nebula-11"></script>
+</body>
+</html>

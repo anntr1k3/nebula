@@ -1,0 +1,63 @@
+/* UI perf: disable expensive effects only while actively scrolling. */
+
+body.is-chat-scrolling {
+  /* background-attachment: fixed is expensive on some GPUs */
+  background-attachment: scroll;
+}
+
+body.is-chat-scrolling .liquid-sidebar,
+body.is-chat-scrolling .liquid-main,
+body.is-chat-scrolling .liquid-chat-header,
+body.is-chat-scrolling .message-input-container.liquid-composer,
+body.is-chat-scrolling .message,
+body.is-chat-scrolling .ctx-menu,
+body.is-chat-scrolling .emoji-bar,
+body.is-chat-scrolling .emoji-picker-expanded,
+body.is-chat-scrolling .composer-float,
+body.is-chat-scrolling .search-results,
+body.is-chat-scrolling .local-search-results,
+body.is-chat-scrolling .user-suggest-panel {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+body.is-chat-scrolling .glass-button-small,
+body.is-chat-scrolling .glass-button-secondary,
+body.is-chat-scrolling .reaction-chip {
+  box-shadow: none !important;
+}
+
+body.is-chat-scrolling .liquid-sidebar::before,
+body.is-chat-scrolling .liquid-main::before,
+body.is-chat-scrolling .liquid-chat-header::before,
+body.is-chat-scrolling .message-input-container.liquid-composer::before,
+body.is-chat-scrolling .composer-float::before,
+body.is-chat-scrolling .ctx-menu::before,
+body.is-chat-scrolling .emoji-picker-expanded::before,
+body.is-chat-scrolling .liquid-modal-card::before,
+body.is-chat-scrolling .liquid-auth-card::before,
+body.is-chat-scrolling .liquid-glass-surface::before,
+body.is-chat-scrolling .liquid-sidebar::after,
+body.is-chat-scrolling .liquid-main::after,
+body.is-chat-scrolling .liquid-chat-header::after,
+body.is-chat-scrolling .message-input-container.liquid-composer::after,
+body.is-chat-scrolling .composer-float::after,
+body.is-chat-scrolling .ctx-menu::after,
+body.is-chat-scrolling .emoji-picker-expanded::after,
+body.is-chat-scrolling .liquid-modal-card::after,
+body.is-chat-scrolling .liquid-auth-card::after,
+body.is-chat-scrolling .liquid-glass-surface::after {
+  display: none;
+}
+
+/* When blur is disabled, slightly increase bubble opacity for readability. */
+body.is-chat-scrolling .message:not(.own) {
+  background: color-mix(in srgb, var(--bubble-incoming) 92%, var(--bg-deep));
+}
+
+body.is-chat-scrolling .message.own {
+  /* keep the gradient, but drop heavy shadows */
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--accent-soft) 80%, transparent);
+}

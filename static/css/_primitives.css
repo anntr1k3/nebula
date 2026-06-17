@@ -1,0 +1,107 @@
+/* —— Liquid Glass: полупрозрачная заливка + размытие фона под элементом —— */
+.glass-surface,
+.liquid-sidebar,
+.liquid-main,
+.glass-container {
+  background: var(--glass-fill);
+  backdrop-filter: blur(var(--blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-inset), var(--glass-shadow);
+  transition:
+    background var(--transition),
+    border-color var(--transition),
+    box-shadow var(--transition);
+}
+
+.glass-surface-elevated {
+  background: var(--glass-fill-elevated);
+  backdrop-filter: blur(var(--blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-inset), var(--glass-shadow);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .glass-surface,
+  .glass-surface-elevated,
+  .liquid-sidebar,
+  .liquid-main {
+    background: var(--glass-fill-elevated);
+  }
+}
+
+/* —— App shell —— */
+/* .nebula-shell display:flex must not override [hidden] — fixed children (e.g. settings dock) would stay visible */
+.nebula-shell[hidden] {
+  display: none !important;
+}
+
+.nebula-shell {
+  display: flex;
+  width: 100%;
+  max-width: none;
+  height: 100vh;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: none;
+  transition: box-shadow var(--transition);
+}
+
+body.light-theme .nebula-shell {
+  box-shadow: none;
+}
+
+body.light-theme .glass-button-secondary,
+body.light-theme .glass-button-small,
+body.light-theme .theme-option:not(.active) {
+  background: var(--light-button-fill);
+  border-color: var(--light-button-border);
+  color: var(--text);
+  box-shadow: var(--light-button-shadow);
+}
+
+body.light-theme .glass-button-secondary:hover,
+body.light-theme .glass-button-small:hover,
+body.light-theme .theme-option:not(.active):hover {
+  background: var(--light-button-fill-hover);
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--light-button-border));
+}
+
+body.light-theme .glass-button {
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--accent-soft) 72%, transparent);
+}
+
+@media (max-width: 720px) {
+  /* Master–detail: список чатов или открытый диалог на всю ширину */
+  #view-messenger:not(.mobile-chat-active) .chat-area {
+    display: none !important;
+  }
+
+  #view-messenger:not(.mobile-chat-active) .sidebar {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    border-right: none;
+  }
+
+  #view-messenger.mobile-chat-active .sidebar {
+    display: none !important;
+  }
+
+  #view-messenger.mobile-chat-active .chat-area {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+  }
+
+  #view-messenger.mobile-chat-active .liquid-chat-header {
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+  }
+}
+

@@ -1,0 +1,597 @@
+/* —— Context & emoji —— */
+.ctx-menu {
+  position: fixed;
+  z-index: 10000;
+  min-width: 200px;
+  padding: 6px;
+  background: var(--glass-fill-elevated);
+  backdrop-filter: blur(var(--blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  border: 1px solid var(--glass-border-bright);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-inset), 0 16px 40px rgba(0, 0, 0, 0.32);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(-14px);
+  transition:
+    opacity var(--transition),
+    transform var(--transition),
+    visibility 0s linear var(--duration-hover);
+}
+
+.ctx-menu.ctx-menu--theirs {
+  transform: translateX(14px);
+}
+
+.ctx-menu.ctx-menu--open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(0);
+  transition:
+    opacity var(--transition),
+    transform var(--transition),
+    visibility 0s linear 0s;
+}
+
+.ctx-menu[hidden] {
+  display: none !important;
+}
+
+.ctx-menu:not([hidden]) {
+  display: block;
+}
+
+.ctx-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-interactive);
+}
+
+.ctx-menu-icon {
+  flex-shrink: 0;
+  width: 16px;
+  font-size: 13px;
+  text-align: center;
+  opacity: 0.82;
+}
+
+.ctx-menu-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ctx-menu button:hover {
+  background: var(--glass-highlight);
+}
+
+.ctx-menu button.destructive {
+  color: var(--danger);
+}
+
+.emoji-bar {
+  position: fixed;
+  z-index: 10040;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--glass-fill-elevated);
+  backdrop-filter: blur(var(--blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  border: 1px solid var(--glass-border-bright);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--glass-inset), 0 16px 40px rgba(0, 0, 0, 0.32);
+  transition: var(--transition-interactive);
+}
+
+/* Иначе .emoji-bar { display: flex } перебивает UA [hidden] и полоска не скрывается при JS .hidden = true */
+.emoji-bar[hidden] {
+  display: none !important;
+}
+
+/* Появление через класс + transition (keyframes с display:none не анимируются) */
+.emoji-bar:not([hidden]):not(.emoji-bar--visible) {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+.emoji-bar:not([hidden]).emoji-bar--visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity var(--transition-modal),
+    transform var(--transition-modal);
+}
+
+.emoji-bar-emoji {
+  padding: 4px 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: var(--transition-interactive);
+  line-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emoji-bar-emoji-img {
+  width: 28px;
+  height: 28px;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.emoji-bar-emoji:hover {
+  background: var(--glass-highlight);
+}
+
+.emoji-bar-more {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 14px;
+  margin-left: 2px;
+  border: 1px solid var(--glass-border-bright);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--glass-fill-elevated) 96%, var(--accent) 6%);
+  color: var(--text);
+  cursor: pointer;
+  font-family: var(--font);
+  letter-spacing: 0.02em;
+  transition: var(--transition-interactive);
+  box-shadow: var(--glass-inset);
+}
+
+.emoji-bar-more:hover {
+  background: var(--glass-highlight);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--glass-border));
+}
+
+.emoji-bar-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-left: 2px;
+  padding: 0;
+  flex-shrink: 0;
+  border: 1px solid var(--glass-border-bright);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--glass-fill-elevated) 96%, var(--accent) 6%);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+  transition: var(--transition-interactive);
+  box-shadow: var(--glass-inset);
+}
+
+.emoji-bar-close:hover {
+  background: var(--glass-highlight);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--glass-border));
+}
+
+.emoji-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  /* Выше чата, тоста (9999) и прочего UI, иначе клики не доходят до подложки */
+  z-index: 10030;
+  /* Без затемнения — только перехват клика «мимо» полоски */
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  pointer-events: auto;
+}
+
+.emoji-picker-backdrop[hidden] {
+  display: none !important;
+}
+
+.emoji-picker-expanded {
+  position: fixed;
+  z-index: 10050;
+  width: min(100vw - 24px, 292px);
+  max-height: min(52vh, 380px);
+  min-height: 0;
+  padding: 10px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--glass-fill-elevated);
+  backdrop-filter: blur(var(--blur-heavy)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  -webkit-backdrop-filter: blur(var(--blur-heavy)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  border: 1px solid var(--glass-border-bright);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--glass-inset), 0 20px 48px rgba(0, 0, 0, 0.34);
+  overflow: hidden;
+}
+
+.emoji-picker-expanded-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 4px 10px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--glass-border);
+  flex-shrink: 0;
+}
+
+.emoji-picker-expanded-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-family: var(--font);
+  letter-spacing: 0.02em;
+}
+
+.emoji-picker-expanded-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--glass-fill-elevated);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 15px;
+  transition: var(--transition-interactive);
+}
+
+.emoji-picker-expanded-close:hover {
+  background: var(--glass-highlight);
+}
+
+.emoji-picker-expanded[hidden] {
+  display: none !important;
+}
+
+.emoji-picker-expanded:not([hidden]):not(.emoji-picker-expanded--visible) {
+  opacity: 0;
+  transform: translateY(18px) scale(0.96);
+  transform-origin: bottom right;
+}
+
+.emoji-picker-expanded:not([hidden]).emoji-picker-expanded--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transform-origin: bottom right;
+  transition:
+    opacity var(--transition-modal),
+    transform var(--transition-modal);
+}
+
+.emoji-picker-expanded-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-auto-rows: 40px;
+  grid-auto-flow: row;
+  align-content: start;
+  justify-items: stretch;
+  gap: 6px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 2px 2px;
+  flex: 1 1 auto;
+  min-height: 120px;
+  max-height: min(46vh, 300px);
+  -webkit-overflow-scrolling: touch;
+}
+
+.emoji-picker-expanded-item {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 40px;
+  min-height: 40px;
+  min-width: 0;
+  padding: 4px;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  line-height: 1;
+  cursor: pointer;
+  transition: var(--transition-interactive);
+}
+
+.emoji-picker-expanded-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.emoji-picker-expanded-item:hover {
+  background: var(--glass-highlight);
+}
+
+/* Всплывающие меню композера (TTL, отложенная отправка) */
+.composer-float {
+  position: fixed;
+  z-index: 10050;
+  min-width: 220px;
+  padding: 10px;
+  background: var(--glass-fill-elevated);
+  backdrop-filter: blur(var(--blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+  border: 1px solid var(--glass-border-bright);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-inset), 0 16px 40px rgba(0, 0, 0, 0.32);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  /* Появление над якорем: лёгкий сдвиг снизу вверх (без смены габаритов кнопок) */
+  transform: translateY(12px);
+  transition:
+    opacity var(--transition),
+    transform var(--transition),
+    visibility 0s linear var(--duration-hover);
+}
+
+.composer-float.composer-float--open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) translateX(0);
+  transition:
+    opacity var(--transition),
+    transform var(--transition),
+    visibility 0s linear 0s;
+}
+
+.composer-float[hidden] {
+  display: none !important;
+}
+
+.composer-float:not([hidden]) {
+  display: block;
+}
+
+.composer-float--ttl {
+  padding: 6px;
+}
+
+#schedule-popover.composer-float,
+.composer-float.composer-float--schedule {
+  min-width: min(100vw - 24px, 300px);
+}
+
+.composer-float--ai {
+  min-width: min(100vw - 24px, 260px);
+  padding: 6px;
+}
+
+.composer-action-btn--ai.is-busy i {
+  animation: fa-spin 1.2s linear infinite;
+}
+
+.composer-action-btn--ai:not(.composer-action-btn--ai-off) {
+  color: var(--accent);
+}
+
+.composer-action-btn--ai-off {
+  opacity: 0.72;
+}
+
+.composer-action-btn--ai-off:hover {
+  color: var(--text-muted);
+  border-color: var(--glass-border);
+}
+
+.edit-ai-section--off .edit-ai-chip {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.edit-ai-section {
+  margin-top: 0.75rem;
+}
+
+.edit-ai-label {
+  margin: 0 0 0.5rem;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.edit-ai-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.edit-ai-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.edit-ai-chip i {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.composer-float-option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: left;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-interactive);
+  font-family: inherit;
+}
+
+.composer-float-option:hover {
+  background: var(--glass-highlight);
+}
+
+.composer-float-option.is-active {
+  background: color-mix(in srgb, var(--accent-soft) 35%, transparent);
+  color: var(--accent);
+}
+
+.composer-float-option i {
+  width: 1.1rem;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.composer-float-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.composer-float-header i {
+  color: var(--accent);
+  opacity: 0.9;
+}
+
+.composer-float-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.composer-float-input {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.composer-float-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.composer-float-actions--schedule {
+  flex-direction: row;
+}
+
+/* secondary не наследует отступы от .glass-button — задаём явно */
+.composer-float-actions .glass-button-secondary {
+  margin: 0;
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  line-height: 1.25;
+}
+
+.composer-float-actions .glass-button {
+  width: auto;
+  margin: 0;
+  padding: 10px 20px;
+  font-size: 14px;
+}
+
+.composer-float-actions--schedule .glass-button,
+.composer-float-actions--schedule .glass-button-secondary {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: none;
+  box-sizing: border-box;
+  padding: 11px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.ctx-menu,
+.emoji-bar,
+.emoji-picker-expanded,
+.composer-float {
+  background: var(--glass-liquid-panel);
+  border-color: var(--glass-liquid-border);
+  box-shadow:
+    var(--glass-liquid-inset),
+    var(--glass-liquid-shadow),
+    var(--glass-liquid-chromatic-edge);
+  backdrop-filter: blur(var(--glass-liquid-blur-support)) saturate(var(--glass-liquid-saturate))
+    brightness(var(--glass-liquid-brightness));
+  -webkit-backdrop-filter: blur(var(--glass-liquid-blur-support)) saturate(var(--glass-liquid-saturate))
+    brightness(var(--glass-liquid-brightness));
+}
+
+.ctx-menu button:hover,
+.emoji-bar-emoji:hover,
+.emoji-bar-more:hover,
+.emoji-bar-close:hover,
+.emoji-picker-expanded-close:hover,
+.emoji-picker-expanded-item:hover,
+.composer-float-option:hover {
+  background: var(--glass-liquid-highlight);
+}
+
+.emoji-bar-more,
+.emoji-bar-close,
+.emoji-picker-expanded-close,
+.composer-float .glass-input,
+.composer-float-actions .glass-button-secondary {
+  background: var(--glass-liquid-input);
+  border-color: var(--glass-liquid-border);
+  box-shadow: var(--glass-liquid-field-chromatic);
+}
+

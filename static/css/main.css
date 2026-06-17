@@ -1,0 +1,27 @@
+/**
+ * «Небула» — точка входа CSS. Сам `main.css` больше не содержит правил, только
+ * @import'ы в порядке «токены → примитивы → компоненты → оверрайды».
+ *
+ * Границы файлов совпадают с бывшими блочными комментариями в прежнем
+ * монолитном main.css (3999 строк). Реальные стили разнесены по
+ * `nebula/static/css/*.css` — см. план декомпозиции.
+ */
+
+@import './_tokens.css';
+@import './_primitives.css';
+@import './liquid-glass.css';
+@import './sidebar-dropdown.css';
+@import './auth.css';
+@import './sidebar.css';
+@import './dock.css';
+@import './chat.css';
+@import './pinned-typing-reply.css';
+@import './inbox.css';
+@import './search.css';
+@import './settings.css';
+@import './context-emoji.css';
+@import './modal.css';
+@import './media-viewer.css';
+@import './toast.css';
+@import './scrollbar.css';
+@import './perf.css';

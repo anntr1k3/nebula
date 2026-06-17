@@ -1,0 +1,123 @@
+/* —— Settings —— */
+.settings-modal-card {
+  max-width: min(460px, calc(100vw - 32px));
+}
+
+.settings-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin: 22px 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.settings-modal-card > .settings-section-title:first-of-type {
+  margin-top: 0;
+}
+
+.settings-lang-row {
+  margin-bottom: 4px;
+}
+
+.settings-theme-family {
+  margin: 14px 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.settings-theme-row {
+  flex-wrap: wrap;
+}
+
+.settings-theme-row .theme-option {
+  flex: 1 1 calc(33.333% - 7px);
+  min-width: 0;
+  padding: 11px 10px;
+  font-size: 12px;
+}
+
+@media (max-width: 400px) {
+  .settings-theme-row .theme-option {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  #modal-app-settings .settings-modal-card {
+    max-width: calc(100vw - 20px);
+  }
+
+  #modal-app-settings .settings-theme-row .theme-option {
+    flex: 1 1 calc(33.333% - 6px);
+    padding: 9px 6px;
+    font-size: 11px;
+  }
+}
+
+.settings-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 14px 0 8px;
+}
+
+.blocked-list {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.blocked-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--input-fill);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.theme-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.theme-option,
+.language-option {
+  flex: 1;
+  padding: 12px 14px;
+  background: var(--input-fill);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-interactive);
+}
+
+.theme-option:hover,
+.language-option:hover {
+  border-color: var(--glass-border-bright);
+}
+
+.theme-option:not(.active):hover,
+.language-option:not(.active):hover {
+  background: var(--glass-highlight);
+}
+
+.theme-option.active,
+.language-option.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  background: var(--glass-fill-elevated);
+}
+
