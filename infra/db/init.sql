@@ -65,7 +65,11 @@ CREATE TABLE IF NOT EXISTS messages (
     INDEX idx_created_at (created_at),
     INDEX idx_expires_at (expires_at),
     INDEX idx_username (username),
-    INDEX idx_room_created (room_id, created_at)
+    INDEX idx_room_created (room_id, created_at),
+    INDEX idx_room_created_id (room_id, created_at, message_id),
+    INDEX idx_room_expires_created (room_id, expires_at, created_at),
+    INDEX idx_username_created (username, created_at),
+    FULLTEXT INDEX idx_messages_text_ft (text)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Reactions
@@ -77,7 +81,8 @@ CREATE TABLE IF NOT EXISTS reactions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE,
     UNIQUE KEY unique_reaction (message_id, username, emoji),
-    INDEX idx_message_id (message_id)
+    INDEX idx_message_id (message_id),
+    INDEX idx_message_user (message_id, username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Message read receipts
@@ -194,6 +199,7 @@ CREATE TABLE IF NOT EXISTS reports (
     INDEX idx_reported_by (reported_by),
     INDEX idx_reported_user (reported_user),
     INDEX idx_status (status),
+    INDEX idx_room_status_created (room_id, status, created_at),
     INDEX idx_created_at (created_at),
     INDEX idx_status_created_at (status, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -246,5 +252,6 @@ CREATE TABLE IF NOT EXISTS user_profiles (
     avatar_type VARCHAR(16) DEFAULT 'emoji',
     nickname VARCHAR(64) NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE
+    FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE,
+    INDEX idx_nickname (nickname)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

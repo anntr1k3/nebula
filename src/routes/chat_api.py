@@ -395,7 +395,7 @@ def update_scheduled_message_route(sched_id: int, payload: UpdateScheduledMessag
         return jsonify({"success": False, "message": "Not found"}), 404
     if not db.user_can_access_room(viewer, row["room_id"]):
         return jsonify({"success": False, "message": "Access denied"}), 403
-    updates = {}
+    updates: dict[str, str | datetime] = {}
     if payload.text is not None:
         updates["text"] = payload.text
     if payload.scheduled_at is not None:

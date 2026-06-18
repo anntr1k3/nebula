@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import UTC, datetime, timedelta
 
 from repositories.rooms import room_ids_where_user_is_member_cursor
@@ -8,6 +9,14 @@ from utils.room_access import (
     private_room_peer_username,
 )
 from utils.time_format import isoformat_utc_z
+
+
+def _fulltext_boolean_query(query_text):
+    terms = re.findall(r"\w+", (query_text or "").lower())
+    terms = [term for term in terms if len(term) >= 2][:8]
+    if not terms:
+        return None
+    return " ".join(f"+{term}*" for term in terms)
 
 
 def add_message_read(get_db_cursor, logger, Error, message_id, username):
@@ -403,24 +412,47 @@ def search_messages_global(
     get_db_cursor, logger, Error, username, query_text, limit=50
 ):
     try:
-        like_query = f"%{query_text}%"
-        fetch_limit = min(max(int(limit), 1), 200) * 4
+        q = (query_text or "").strip()
+        lim = min(max(int(limit), 1), 200)
+        like_query = f"%{q}%"
+        fetch_limit = lim * 4
+        ft_query = _fulltext_boolean_query(q)
 
         with get_db_cursor() as (cursor, _):
-            cursor.execute(
-                """
-                SELECT message_id, room_id, username, text, created_at
-                FROM messages
-                WHERE text IS NOT NULL
-                  AND text != ''
-                  AND text LIKE %s
-                  AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
-                ORDER BY created_at DESC
-                LIMIT %s
-                """,
-                (like_query, fetch_limit),
-            )
-            rows = cursor.fetchall()
+            rows = []
+            if ft_query:
+                try:
+                    cursor.execute(
+                        """
+                        SELECT message_id, room_id, username, text, created_at,
+                               MATCH(text) AGAINST (%s IN BOOLEAN MODE) AS search_rank
+                        FROM messages
+                        WHERE MATCH(text) AGAINST (%s IN BOOLEAN MODE)
+                          AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
+                        ORDER BY search_rank DESC, created_at DESC
+                        LIMIT %s
+                        """,
+                        (ft_query, ft_query, fetch_limit),
+                    )
+                    rows = cursor.fetchall()
+                except Error as error:
+                    logger.warning(f"FULLTEXT search fallback to LIKE: {error}")
+
+            if not rows:
+                cursor.execute(
+                    """
+                    SELECT message_id, room_id, username, text, created_at
+                    FROM messages
+                    WHERE text IS NOT NULL
+                      AND text != ''
+                      AND text LIKE %s
+                      AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
+                    ORDER BY created_at DESC
+                    LIMIT %s
+                    """,
+                    (like_query, fetch_limit),
+                )
+                rows = cursor.fetchall()
             group_room_ids = [
                 r["room_id"] for r in rows if r.get("room_id", "").startswith("room_")
             ]
@@ -480,9 +512,14 @@ def search_messages_advanced(
             params.append(room_id)
 
         q = (query_text or "").strip()
+        ft_query = _fulltext_boolean_query(q)
         if q:
-            clauses.append("text IS NOT NULL AND text LIKE %s")
-            params.append(f"%{q}%")
+            if ft_query:
+                clauses.append("MATCH(text) AGAINST (%s IN BOOLEAN MODE)")
+                params.append(ft_query)
+            else:
+                clauses.append("text IS NOT NULL AND text LIKE %s")
+                params.append(f"%{q}%")
 
         if date_from:
             clauses.append("created_at >= %s")
@@ -513,17 +550,54 @@ def search_messages_advanced(
         params.append(fetch_limit)
 
         with get_db_cursor() as (cursor, _):
-            cursor.execute(
-                f"""
-                SELECT message_id, room_id, username, text, created_at, media_type
-                FROM messages
-                WHERE {where_sql}
-                ORDER BY created_at DESC
-                LIMIT %s
-                """,
-                tuple(params),
-            )
-            rows = cursor.fetchall()
+            try:
+                rank_select = (
+                    ", MATCH(text) AGAINST (%s IN BOOLEAN MODE) AS search_rank"
+                    if q and ft_query
+                    else ""
+                )
+                order_sql = "search_rank DESC, created_at DESC" if q and ft_query else "created_at DESC"
+                execute_params = (
+                    (ft_query, *params)
+                    if q and ft_query
+                    else tuple(params)
+                )
+                cursor.execute(
+                    f"""
+                    SELECT message_id, room_id, username, text, created_at, media_type
+                           {rank_select}
+                    FROM messages
+                    WHERE {where_sql}
+                    ORDER BY {order_sql}
+                    LIMIT %s
+                    """,
+                    execute_params,
+                )
+                rows = cursor.fetchall()
+            except Error as error:
+                if not (q and ft_query):
+                    raise
+                logger.warning(f"FULLTEXT advanced search fallback to LIKE: {error}")
+                like_clauses = [
+                    c.replace(
+                        "MATCH(text) AGAINST (%s IN BOOLEAN MODE)",
+                        "text IS NOT NULL AND text LIKE %s",
+                    )
+                    for c in clauses
+                ]
+                like_params = [f"%{q}%" if p == ft_query else p for p in params]
+                like_where_sql = " AND ".join(like_clauses)
+                cursor.execute(
+                    f"""
+                    SELECT message_id, room_id, username, text, created_at, media_type
+                    FROM messages
+                    WHERE {like_where_sql}
+                    ORDER BY created_at DESC
+                    LIMIT %s
+                    """,
+                    tuple(like_params),
+                )
+                rows = cursor.fetchall()
             group_room_ids = [
                 r["room_id"] for r in rows if r.get("room_id", "").startswith("room_")
             ]

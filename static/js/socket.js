@@ -13,8 +13,8 @@ export function connectSocket() {
 
   socket = io({
     path: '/socket.io',
-    transports: ['polling'],
-    upgrade: false,
+    transports: ['websocket', 'polling'],
+    upgrade: true,
     reconnection: true,
     reconnectionAttempts: 10,
     reconnectionDelay: 1000,

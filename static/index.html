@@ -69,12 +69,14 @@
   <div id="app-root">
     <div id="view-auth" class="screen" hidden>
       <div class="auth-container liquid-auth-card">
-        <img class="logo-mark" src="/assets/logo-nebula-512.png?v=nebula-logo-1" width="96" height="96" alt="" aria-hidden="true" decoding="async" fetchpriority="high">
+        <img class="logo-mark" src="/assets/logo-nebula-192.png?v=nebula-logo-1" width="96" height="96" alt="" aria-hidden="true" decoding="async" fetchpriority="high">
         <h1 class="logo" data-i18n="appTitle"></h1>
         <div id="auth-login" class="auth-form active">
           <h2 data-i18n="loginTitle"></h2>
-          <input id="login-user" type="text" class="glass-input" data-i18n-placeholder="usernamePlaceholder">
-          <input id="login-pass" type="password" class="glass-input" data-i18n-placeholder="passwordPlaceholder">
+          <label class="visually-hidden" for="login-user" data-i18n="usernamePlaceholder"></label>
+          <input id="login-user" type="text" class="glass-input" data-i18n-placeholder="usernamePlaceholder" autocomplete="username">
+          <label class="visually-hidden" for="login-pass" data-i18n="passwordPlaceholder"></label>
+          <input id="login-pass" type="password" class="glass-input" data-i18n-placeholder="passwordPlaceholder" autocomplete="current-password">
           <button type="button" class="glass-button" id="btn-login" data-i18n="loginButton"></button>
           <p class="switch-auth">
             <span data-i18n="noAccount"></span>
@@ -84,7 +86,9 @@
 
         <div id="auth-register" class="auth-form">
           <h2 data-i18n="registerTitle"></h2>
-          <input id="reg-user" type="text" class="glass-input" data-i18n-placeholder="usernamePlaceholder">
+          <label class="visually-hidden" for="reg-user" data-i18n="usernamePlaceholder"></label>
+          <input id="reg-user" type="text" class="glass-input" data-i18n-placeholder="usernamePlaceholder" autocomplete="username">
+          <label class="visually-hidden" for="reg-pass" data-i18n="passwordPlaceholder"></label>
           <input
             id="reg-pass"
             type="password"
@@ -216,7 +220,7 @@
       <main class="chat-area liquid-main">
         <div id="no-chat" class="no-chat">
           <div class="no-chat-visual" aria-hidden="true">
-            <img class="no-chat-logo" src="/assets/logo-nebula-512.png?v=nebula-logo-1" alt="" decoding="async">
+            <img class="no-chat-logo" src="/assets/logo-nebula-192.png?v=nebula-logo-1" alt="" decoding="async">
           </div>
           <p class="no-chat-text" data-i18n="selectChat"></p>
           <p class="no-chat-hint" data-i18n="selectChatHint"></p>
@@ -277,7 +281,7 @@
             </div>
             <div id="chat-empty-state" class="chat-empty-state" hidden>
               <div class="chat-empty-visual" aria-hidden="true">
-                <img class="chat-empty-logo" src="/assets/logo-nebula-512.png?v=nebula-logo-1" alt="" decoding="async">
+                <img class="chat-empty-logo" src="/assets/logo-nebula-192.png?v=nebula-logo-1" alt="" decoding="async">
               </div>
               <p class="chat-empty-text" data-i18n="chatEmptyMessages"></p>
             </div>
@@ -404,7 +408,7 @@
       <div class="modal-content liquid-modal-card">
         <h2 id="modal-profile-title" data-i18n="profileModalTitle"></h2>
         <label class="settings-label" for="profile-nickname" data-i18n="profileNickname"></label>
-        <input id="profile-nickname" type="text" class="glass-input" maxlength="64" autocomplete="nickname">
+        <input id="profile-nickname" type="text" class="glass-input" maxlength="64" autocomplete="off">
         <label class="settings-label" for="profile-bio" data-i18n="profileBio"></label>
         <textarea id="profile-bio" class="glass-input glass-textarea" rows="3" maxlength="500"></textarea>
         <label class="settings-label" data-i18n="profileAvatar"></label>
@@ -423,12 +427,13 @@
         </div>
         <p class="profile-avatar-hint settings-hint" data-i18n="profileAvatarHint"></p>
         <div id="profile-emoji-wrap">
-          <label class="settings-label" for="profile-avatar" data-i18n="profileAvatarEmoji"></label>
+          <div class="settings-label" id="profile-avatar-label" data-i18n="profileAvatarEmoji"></div>
           <div
             id="profile-avatar"
             class="glass-input profile-avatar-emoji-field"
             contenteditable="true"
             role="textbox"
+            aria-labelledby="profile-avatar-label"
             aria-multiline="false"
             spellcheck="false"
             data-i18n-placeholder="profileAvatarEmoji"

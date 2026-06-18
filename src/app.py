@@ -215,7 +215,7 @@ def create_app(testing=False, strict_db=True):
         app,
         cors_allowed_origins=allowed_origins,
         max_http_buffer_size=MAX_MEDIA_FILE_SIZE,
-        transports=["polling"],
+        transports=["websocket", "polling"],
         async_mode="threading",
         async_handlers=False,
         logger=False,

@@ -79,6 +79,12 @@ mysql -u nebula -p nebula < /opt/nebula/infra/db/init.sql
 
 The schema file creates missing tables. For existing production databases, keep future schema changes as explicit `ALTER TABLE` migration scripts.
 
+Apply project migrations after the initial schema and after updates that add new files under `infra/db/migrations`:
+
+```bash
+mysql -u nebula -p nebula < /opt/nebula/infra/db/migrations/001_performance_indexes.sql
+```
+
 ## 5. Configure Environment
 
 ```bash
@@ -168,6 +174,8 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
     }
 
     location /socket.io/ {
@@ -177,6 +185,8 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
         proxy_buffering off;
     }
 }
@@ -207,6 +217,7 @@ cd /opt/nebula
 git pull --ff-only
 source venv/bin/activate
 python -m pip install -e .
+mysql -u nebula -p nebula < infra/db/migrations/001_performance_indexes.sql
 systemctl restart nebula
 systemctl status nebula --no-pager
 ```

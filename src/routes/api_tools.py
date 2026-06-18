@@ -267,7 +267,6 @@ def create_api_tools_bp(media_dir: str | None = None):
                             "avatarType": at,
                             "nickname": (prof.get("nickname") or "").strip() or username,
                         },
-                        broadcast=True,
                         namespace="/",
                     )
             except Exception:

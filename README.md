@@ -92,6 +92,12 @@ infra/db/init.sql
 
 The script uses `CREATE TABLE IF NOT EXISTS`, so it can create missing tables. Structural updates for an existing production database should be applied with explicit migration scripts.
 
+Performance and schema updates for existing databases are stored in:
+
+```text
+infra/db/migrations/
+```
+
 ## Code Quality
 
 Install development dependencies:
