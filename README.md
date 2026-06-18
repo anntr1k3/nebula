@@ -1,5 +1,7 @@
 # Nebula Messenger
 
+[Русская версия](README.ru.md)
+
 Nebula is a web messenger built with Flask, Flask-SocketIO, MySQL, Redis, and a static HTML/CSS/JavaScript frontend.
 
 The project includes user authentication, private and group chats, message reactions, pinned messages, read state, drafts, scheduled messages, profile settings, media uploads, moderation tools, and optional AI-assisted message editing.
