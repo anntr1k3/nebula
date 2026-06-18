@@ -1,19 +1,19 @@
-# Deployment Guide
+# Инструкция По Деплою
 
-[Русская версия](deploy.ru.md)
+[English version](deploy.md)
 
-This guide describes a basic production deployment for Nebula on a Linux server with Git, Python, MySQL, Redis, systemd, and Nginx.
+Эта инструкция описывает базовый production-деплой Nebula на Linux-сервер с Git, Python, MySQL, Redis, systemd и Nginx.
 
-Commands below assume Ubuntu/Debian and the project path `/opt/nebula`.
+Команды ниже рассчитаны на Ubuntu/Debian и путь проекта `/opt/nebula`.
 
-## 1. Install System Packages
+## 1. Установка Системных Пакетов
 
 ```bash
 apt update
 apt install -y git python3 python3-venv python3-pip mysql-server redis-server nginx
 ```
 
-Enable services:
+Включите сервисы:
 
 ```bash
 systemctl enable --now mysql
@@ -21,7 +21,7 @@ systemctl enable --now redis-server
 systemctl enable --now nginx
 ```
 
-## 2. Clone the Repository
+## 2. Клонирование Репозитория
 
 ```bash
 cd /opt
@@ -29,14 +29,14 @@ git clone https://github.com/anntrik3/nebula.git nebula
 cd /opt/nebula
 ```
 
-For updates after the first deployment:
+Для обновлений после первого деплоя:
 
 ```bash
 cd /opt/nebula
 git pull --ff-only
 ```
 
-## 3. Configure Python
+## 3. Настройка Python
 
 ```bash
 cd /opt/nebula
@@ -46,22 +46,22 @@ python -m pip install -U pip
 python -m pip install -e .
 ```
 
-For later updates, rerun:
+При следующих обновлениях повторяйте:
 
 ```bash
 source /opt/nebula/venv/bin/activate
 python -m pip install -e .
 ```
 
-## 4. Configure MySQL
+## 4. Настройка MySQL
 
-Open MySQL:
+Откройте MySQL:
 
 ```bash
 mysql
 ```
 
-Create the database and user:
+Создайте базу данных и пользователя:
 
 ```sql
 CREATE DATABASE nebula CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -71,15 +71,15 @@ FLUSH PRIVILEGES;
 EXIT;
 ```
 
-Apply the schema:
+Примените схему:
 
 ```bash
 mysql -u nebula -p nebula < /opt/nebula/infra/db/init.sql
 ```
 
-The schema file creates missing tables. For existing production databases, keep future schema changes as explicit `ALTER TABLE` migration scripts.
+Файл схемы создает недостающие таблицы. Для уже существующей production-базы будущие изменения структуры лучше хранить как отдельные миграционные скрипты с явными `ALTER TABLE`.
 
-## 5. Configure Environment
+## 5. Настройка Окружения
 
 ```bash
 cd /opt/nebula
@@ -87,7 +87,7 @@ cp .env.example .env
 nano .env
 ```
 
-Recommended production values:
+Рекомендуемые значения для production:
 
 ```env
 SECRET_KEY=replace-with-a-long-random-secret
@@ -109,15 +109,15 @@ AI_API_KEY=
 AI_MODEL=gpt-4o-mini
 ```
 
-Protect the environment file:
+Ограничьте доступ к файлу окружения:
 
 ```bash
 chmod 600 /opt/nebula/.env
 ```
 
-## 6. Create a systemd Service
+## 6. Создание systemd-Сервиса
 
-Create `/etc/systemd/system/nebula.service`:
+Создайте `/etc/systemd/system/nebula.service`:
 
 ```ini
 [Unit]
@@ -136,7 +136,7 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
-Enable and start the service:
+Включите и запустите сервис:
 
 ```bash
 systemctl daemon-reload
@@ -144,15 +144,15 @@ systemctl enable --now nebula
 systemctl status nebula --no-pager
 ```
 
-Application logs are written to `/opt/nebula/logs/messenger.log`. systemd logs are available through:
+Логи приложения пишутся в `/opt/nebula/logs/messenger.log`. Логи systemd доступны через:
 
 ```bash
 journalctl -u nebula -f
 ```
 
-## 7. Configure Nginx
+## 7. Настройка Nginx
 
-Create `/etc/nginx/sites-available/nebula`:
+Создайте `/etc/nginx/sites-available/nebula`:
 
 ```nginx
 server {
@@ -182,7 +182,7 @@ server {
 }
 ```
 
-Enable the site:
+Включите сайт:
 
 ```bash
 ln -s /etc/nginx/sites-available/nebula /etc/nginx/sites-enabled/nebula
@@ -190,16 +190,16 @@ nginx -t
 systemctl reload nginx
 ```
 
-For HTTPS, install Certbot and issue a certificate:
+Для HTTPS установите Certbot и выпустите сертификат:
 
 ```bash
 apt install -y certbot python3-certbot-nginx
 certbot --nginx -d your-domain.example
 ```
 
-## 8. Update the Application
+## 8. Обновление Приложения
 
-Use this sequence after pushing new code to GitHub:
+Используйте эту последовательность после отправки нового кода на GitHub:
 
 ```bash
 ssh root@135.106.130.149
@@ -211,24 +211,24 @@ systemctl restart nebula
 systemctl status nebula --no-pager
 ```
 
-If database structure changed, apply the migration before restarting the service.
+Если изменилась структура базы данных, примените миграцию до перезапуска сервиса.
 
-## 9. Health Checks
+## 9. Проверка Работы
 
-Check service state:
+Проверьте состояние сервиса:
 
 ```bash
 systemctl status nebula --no-pager
 ```
 
-Follow logs:
+Следите за логами:
 
 ```bash
 journalctl -u nebula -f
 tail -f /opt/nebula/logs/messenger.log
 ```
 
-Check open ports:
+Проверьте открытые порты:
 
 ```bash
 ss -tulpn | grep -E ':80|:443|:5000'

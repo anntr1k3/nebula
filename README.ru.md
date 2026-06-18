@@ -111,7 +111,7 @@ mypy src
 
 ## Деплой
 
-См. [docs/deploy.md](docs/deploy.md) - инструкцию по деплою на сервер с Git, virtualenv, MySQL, Redis, systemd и Nginx.
+См. [docs/deploy.ru.md](docs/deploy.ru.md) - инструкцию по деплою на сервер с Git, virtualenv, MySQL, Redis, systemd и Nginx.
 
 ## Скриншоты
 
