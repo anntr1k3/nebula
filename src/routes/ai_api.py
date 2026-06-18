@@ -1,7 +1,11 @@
 from flask import Blueprint, current_app, jsonify
 
 from schemas.ai import AiRewriteBody
-from services.ai_editor import AiNotConfiguredError, AiServiceError, rewrite_message_text
+from services.ai_editor import (
+    AiNotConfiguredError,
+    AiServiceError,
+    rewrite_message_text,
+)
 from utils.auth_helpers import require_auth_user
 from utils.pydantic_validation import validate_body
 

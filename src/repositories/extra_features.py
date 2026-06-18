@@ -187,13 +187,13 @@ def _row_to_scheduled_dict(row):
         if out.get(key) is not None and hasattr(out[key], "isoformat"):
             out[key] = out[key].isoformat()
     meta = out.get("media_meta")
-    if isinstance(meta, (bytes, str)):
+    if isinstance(meta, bytes | str):
         try:
             out["media_meta"] = json.loads(meta)
         except (json.JSONDecodeError, TypeError):
             out["media_meta"] = None
     reply = out.get("reply_to_json")
-    if isinstance(reply, (bytes, str)):
+    if isinstance(reply, bytes | str):
         try:
             out["reply_to_json"] = json.loads(reply)
         except (json.JSONDecodeError, TypeError):
