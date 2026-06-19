@@ -40,6 +40,23 @@ from utils.sanitizers import sanitize_text
 from utils.validators import is_valid_password, is_valid_username, validate_mime_type
 
 
+def _parse_allowed_origins(raw: object) -> str | list[str]:
+    """Нормализует ALLOWED_ORIGINS в формат, понятный Flask-CORS и Flask-SocketIO.
+
+    Значение из .env приходит одной строкой. Список через запятую нужно разбить:
+    Flask-SocketIO трактует одиночную строку как ОДИН origin-литерал, поэтому
+    ``"a,b,c"`` не совпадает ни с одним реальным origin и handshake отклоняется
+    с ``400 Not an accepted origin``. ``"*"`` оставляем как есть.
+    """
+    if isinstance(raw, (list, tuple)):
+        return [str(o).strip() for o in raw if str(o).strip()]
+    text = str(raw).strip()
+    if text in ("", "*"):
+        return "*"
+    origins = [o.strip() for o in text.split(",") if o.strip()]
+    return origins[0] if len(origins) == 1 else origins
+
+
 def _install_socketio_emit_lock(socketio: SocketIO) -> threading.RLock:
     """Сериализация emit/комнат: воркер отложенных сообщений + Werkzeug (threading).
 
@@ -209,14 +226,14 @@ def create_app(testing=False, strict_db=True):
             "воркерами. Укажите REDIS_URL при нескольких процессах."
         )
 
-    allowed_origins = app.config.get("ALLOWED_ORIGINS", "*")
-    CORS(app, origins=allowed_origins if allowed_origins != "*" else "*")
+    allowed_origins = _parse_allowed_origins(app.config.get("ALLOWED_ORIGINS", "*"))
+    CORS(app, origins=allowed_origins)
     socketio = SocketIO(
         app,
         cors_allowed_origins=allowed_origins,
         max_http_buffer_size=MAX_MEDIA_FILE_SIZE,
         transports=["websocket", "polling"],
-        async_mode="threading",
+        async_mode=os.getenv("NEBULA_SOCKETIO_ASYNC_MODE", "threading"),
         async_handlers=False,
         logger=False,
         engineio_logger=False,

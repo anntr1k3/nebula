@@ -27,6 +27,13 @@ dev = [
     "ruff==0.8.4",
     "mypy==1.14.1",
 ]
+# Production WSGI server with native WebSocket support for Socket.IO.
+# Install with: pip install -e ".[prod]"
+prod = [
+    "gunicorn==26.0.0",
+    "gevent==24.11.1",
+    "gevent-websocket==0.10.1",
+]
 
 [tool.setuptools]
 packages = []

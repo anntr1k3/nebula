@@ -27,6 +27,10 @@ DB_CONFIG = {
     "charset": "utf8mb4",
     "collation": "utf8mb4_unicode_ci",
     "autocommit": False,
+    # Pure-Python driver uses the standard socket module, which gevent can
+    # monkey-patch. The C extension would block the whole gevent event loop on
+    # every query under the gevent-websocket worker. See NEBULA_SOCKETIO_ASYNC_MODE.
+    "use_pure": True,
 }
 
 connection_pool = None

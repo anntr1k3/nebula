@@ -44,7 +44,12 @@ python3 -m venv venv
 source venv/bin/activate
 python -m pip install -U pip
 python -m pip install -e .
+python -m pip install gunicorn gevent gevent-websocket
 ```
+
+`gunicorn`, `gevent` and `gevent-websocket` provide the production WSGI server with
+native WebSocket support. Without the gevent-websocket worker, Socket.IO falls back to
+HTTP long-polling and browsers log `wss://.../socket.io/ failed` errors in the console.
 
 For later updates, rerun:
 
@@ -99,6 +104,7 @@ Recommended production values:
 SECRET_KEY=replace-with-a-long-random-secret
 NEBULA_ENV=production
 ALLOWED_ORIGINS=https://your-domain.example
+NEBULA_SOCKETIO_ASYNC_MODE=gevent
 REDIS_URL=redis://localhost:6379/0
 ALLOW_TOKEN_IN_QUERY=false
 
@@ -114,6 +120,12 @@ AI_API_BASE=https://api.openai.com/v1
 AI_API_KEY=
 AI_MODEL=gpt-4o-mini
 ```
+
+List several allowed origins separated by commas without spaces, e.g.
+`ALLOWED_ORIGINS=https://your-domain.example,https://www.your-domain.example`.
+Each entry must exactly match the browser `Origin` (scheme + host), otherwise the
+Socket.IO handshake is rejected with `400 Not an accepted origin` and messages fail
+to send.
 
 Protect the environment file:
 
@@ -134,13 +146,19 @@ After=network.target mysql.service redis-server.service
 Type=simple
 WorkingDirectory=/opt/nebula
 Environment=NEBULA_ENV=production
-ExecStart=/opt/nebula/venv/bin/python /opt/nebula/src/run.py
+ExecStart=/opt/nebula/venv/bin/gunicorn \
+    --worker-class geventwebsocket.gunicorn.workers.GeventWebSocketWorker \
+    --workers 1 --bind 127.0.0.1:5000 --pythonpath src wsgi:app
 Restart=always
 RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
 ```
+
+Keep `--workers 1`: the gevent-websocket worker serves many clients concurrently via
+greenlets. Running multiple workers requires a Socket.IO `message_queue` (Redis) so
+events reach all clients, which is not configured here.
 
 Enable and start the service:
 
