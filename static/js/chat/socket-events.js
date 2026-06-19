@@ -23,6 +23,7 @@ import { loadPinnedStrip, loadUsersOnline, syncMessagesLoadOlderUi } from './roo
 import { loadScheduledMessages, syncScheduledHeaderUi } from './scheduled-messages.js'
 import { syncExpiryWatcher } from './messages-animations.js'
 import { setTypingIndicator } from './composer.js'
+import { decryptMessageForRoom, decryptMessagesForRoom } from '../e2ee.js'
 
 export function bindSocketEvents() {
   const sock = getSocket()
@@ -40,7 +41,8 @@ export function bindSocketEvents() {
   sock.on('message_history', async (data) => {
     if (!data.messages) return
     if (data.room != null && data.room !== state.currentRoom) return
-    const fetched = data.messages.map(normalizeMessage)
+    const room = data.room ?? state.currentRoom
+    const fetched = await decryptMessagesForRoom(data.messages.map(normalizeMessage), room)
     state.messages = mergeHistoryWithExisting(fetched, state.messages)
     state.messagesHasMore = fetched.length >= 100
     await loadScheduledMessages()
@@ -51,9 +53,9 @@ export function bindSocketEvents() {
     syncMessagesLoadOlderUi()
   })
 
-  sock.on('receive_message', (msg) => {
-    const norm = normalizeMessage(msg)
+  sock.on('receive_message', async (msg) => {
     const roomId = msg.room ?? msg.room_id
+    const norm = await decryptMessageForRoom(normalizeMessage(msg), roomId)
     const cur = state.currentRoom
     if (String(roomId || '') === String(cur || '')) {
       const nid = String(norm.message_id || '')
@@ -106,10 +108,13 @@ export function bindSocketEvents() {
     if (needsRender) renderMessages()
   })
 
-  sock.on('message_edited', (data) => {
+  sock.on('message_edited', async (data) => {
     const m = state.messages.find((x) => x.message_id === data.message_id)
     if (m) {
-      m.text = data.new_text
+      const dec = await decryptMessageForRoom({ ...m, text: data.new_text }, state.currentRoom)
+      m.text = dec.text
+      m.rawText = dec.rawText
+      m.e2ee = dec.e2ee
       m.edited = true
       if (!patchMessageEdited(m)) renderMessages()
     }

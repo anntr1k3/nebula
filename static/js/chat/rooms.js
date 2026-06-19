@@ -24,6 +24,7 @@ import { markRoomReadNow } from '../read-maps.js'
 import { normalizeMessage, privatePeer } from '../message-model.js'
 import { fillElementWithAppleEmoji, setComposerPlainText } from '../emoji-apple.js'
 import { openSmoothModal, closeSmoothModal } from '../modal-smooth.js'
+import { decryptMessagesForRoom, syncE2eeButton } from '../e2ee.js'
 import {
   getSidebarDropdownBody,
   hideSidebarDropdown,
@@ -111,7 +112,10 @@ export async function loadOlderMessages() {
   try {
     const data = await api.getMessages(room, getToken(), beforeId, MESSAGE_PAGE_SIZE)
     if (state.currentRoom !== room) return
-    const fetched = (data.messages || []).map(normalizeMessage)
+    const fetched = await decryptMessagesForRoom(
+      (data.messages || []).map(normalizeMessage),
+      room,
+    )
     if (!fetched.length) {
       state.messagesHasMore = false
       return
@@ -330,9 +334,11 @@ export function bindPinnedListModal() {
 
 export async function loadPinnedStrip() {
   if (!state.currentRoom) return
+  const room = state.currentRoom
   const token = getToken()
-  const data = await api.getPinned(state.currentRoom, token)
-  const pinned = data.pinned || []
+  const data = await api.getPinned(room, token)
+  if (state.currentRoom !== room) return
+  const pinned = await decryptMessagesForRoom(data.pinned || [], room)
   currentPinnedMessages = pinned
 
   if (!pinned.length) {
@@ -381,6 +387,7 @@ export function openChat(roomId, type) {
   state.messagesHasMore = false
   state.loadingOlderMessages = false
   syncMessagesLoadOlderUi()
+  syncE2eeButton()
   renderMessages({ forceScrollBottom: true })
   markRoomReadNow(roomId)
   const sock = getSocket()
@@ -432,6 +439,7 @@ export function closeCurrentChat() {
   state.messagesHasMore = false
   state.loadingOlderMessages = false
   syncMessagesLoadOlderUi()
+  syncE2eeButton()
   state.replyTo = null
   if (els.messageInput) setComposerPlainText(els.messageInput, '')
   updateReplyPreview()
@@ -468,7 +476,7 @@ export async function loadMessages() {
   const data = await api.getMessages(room, token, null, MESSAGE_PAGE_SIZE)
   if (state.currentRoom !== room) return
   const raw = data.messages || []
-  const fetched = raw.map(normalizeMessage)
+  const fetched = await decryptMessagesForRoom(raw.map(normalizeMessage), room)
   state.messages = mergeHistoryWithExisting(fetched, state.messages)
   state.messagesHasMore = !!data.has_more
   if (state.messages.length === 0) {

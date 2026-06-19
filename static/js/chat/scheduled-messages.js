@@ -9,6 +9,7 @@ import { els, state, showToast } from '../app-shell.js'
 import { fillElementWithAppleEmoji } from '../emoji-apple.js'
 import { openSmoothModal, closeSmoothModal } from '../modal-smooth.js'
 import { normalizeScheduledMessage } from '../message-model.js'
+import { decryptMessageForRoom, decryptMessagesForRoom, encryptTextForRoom } from '../e2ee.js'
 
 let pendingEditScheduled = null
 let pendingDeleteScheduled = null
@@ -26,7 +27,10 @@ export async function loadScheduledMessages() {
     const data = await api.getScheduledMessages(room, token)
     if (state.currentRoom !== room) return
     const raw = data.messages || []
-    state.scheduledMessages = raw.map(normalizeScheduledMessage)
+    state.scheduledMessages = await decryptMessagesForRoom(
+      raw.map(normalizeScheduledMessage),
+      room,
+    )
   } catch {
     if (state.currentRoom === room) state.scheduledMessages = []
   }
@@ -240,9 +244,11 @@ export function bindScheduledMessageModals() {
       showToast(t('schedulePrompt'), 'error')
       return
     }
+    const room = state.currentRoom
+    const encryptedText = await encryptTextForRoom(room, text)
     const r = await api.updateScheduledMessage(
       msg.scheduled_id,
-      { text, scheduled_at: d.toISOString() },
+      { text: encryptedText, scheduled_at: d.toISOString() },
       getToken(),
     )
     if (r.success && r.message) {
@@ -252,7 +258,10 @@ export function bindScheduledMessageModals() {
         (m) => m.scheduled_id === msg.scheduled_id,
       )
       if (idx >= 0) {
-        state.scheduledMessages[idx] = normalizeScheduledMessage(r.message)
+        state.scheduledMessages[idx] = await decryptMessageForRoom(
+          normalizeScheduledMessage(r.message),
+          room,
+        )
       }
       syncScheduledHeaderUi()
       renderScheduledListModal()

@@ -61,6 +61,15 @@ export function collectEls() {
   els.btnScheduledListClose = $('#btn-scheduled-list-close')
   els.btnChatScheduled = $('#btn-chat-scheduled')
   els.chatScheduledCount = $('#chat-scheduled-count')
+  els.btnChatE2ee = $('#btn-chat-e2ee')
+  els.modalE2eeKey = $('#modal-e2ee-key')
+  els.e2eeKeyInput = $('#e2ee-key-input')
+  els.e2eeGeneratedWrap = $('#e2ee-generated-wrap')
+  els.e2eeGeneratedKey = $('#e2ee-generated-key')
+  els.btnE2eeSave = $('#btn-e2ee-save')
+  els.btnE2eeCopy = $('#btn-e2ee-copy')
+  els.btnE2eeRemove = $('#btn-e2ee-remove')
+  els.btnE2eeClose = $('#btn-e2ee-close')
   els.modalEditScheduled = $('#modal-edit-scheduled')
   els.editScheduledInput = $('#edit-scheduled-input')
   els.editScheduledDatetime = $('#edit-scheduled-datetime')
@@ -275,9 +284,25 @@ export function showToast(message, type = 'info') {
   clearTimeout(showToast._t)
   cancelToastEnter()
 
-  els.toast.textContent = message
-  els.toast.classList.remove('error', 'success', 'info', 'toast--visible')
-  els.toast.classList.add(type)
+  const normalizedType = ['error', 'success', 'warning', 'info'].includes(type) ? type : 'info'
+  const iconMap = {
+    error: '!',
+    success: '✓',
+    warning: '!',
+    info: 'i',
+  }
+  els.toast.replaceChildren()
+  const icon = document.createElement('span')
+  icon.className = 'toast-icon'
+  icon.setAttribute('aria-hidden', 'true')
+  icon.textContent = iconMap[normalizedType]
+  const text = document.createElement('span')
+  text.className = 'toast-message'
+  text.textContent = message
+  els.toast.appendChild(icon)
+  els.toast.appendChild(text)
+  els.toast.classList.remove('error', 'success', 'warning', 'info', 'toast--visible')
+  els.toast.classList.add(normalizedType)
   els.toast.hidden = false
   scheduleToastEnter()
 

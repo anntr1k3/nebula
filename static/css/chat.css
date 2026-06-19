@@ -426,7 +426,9 @@ body.light-theme .messages-container {
 
 /* Bubbles */
 .message {
-  padding: 11px 16px 9px;
+  box-sizing: border-box;
+  padding: 9px 14px 7px;
+  min-width: 84px;
   max-width: min(78%, 420px);
   align-self: flex-start;
   content-visibility: auto;
@@ -438,6 +440,12 @@ body.light-theme .messages-container {
   border: 1px solid var(--bubble-incoming-border);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   transition: var(--transition-interactive);
+}
+
+@media (max-width: 420px) {
+  .message {
+    min-width: 76px;
+  }
 }
 
 body.dark-theme .message {
@@ -603,6 +611,7 @@ body.dark-theme .message {
 .message-text {
   font-size: 15px;
   font-weight: 400;
+  line-height: 1.35;
   word-break: break-word;
   white-space: pre-wrap;
 }
@@ -647,7 +656,7 @@ body.dark-theme .message {
 .message-time {
   font-size: 11px;
   color: var(--text-muted);
-  margin-top: 8px;
+  margin-top: 4px;
   display: flex;
   align-items: center;
   justify-content: flex-end;

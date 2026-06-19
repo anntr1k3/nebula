@@ -206,7 +206,7 @@ function buildMessageElement(msg, buildOpts = {}) {
     div.appendChild(ref)
   }
 
-  if (msg.username !== uname || state.currentChatType === 'group') {
+  if (state.currentChatType === 'group') {
     const u = document.createElement('span')
     u.className = 'message-username'
     u.textContent = msg.username

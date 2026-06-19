@@ -21,6 +21,7 @@ import {
 import { openSmoothModal, closeSmoothModal } from '../modal-smooth.js'
 import { scheduleInboxRefresh } from '../inbox.js'
 import { POPOVER_CLOSE_MS } from './constants.js'
+import { decryptTextForRoom, encryptTextForRoom } from '../e2ee.js'
 
 // -----------------------------------------------------------------------------
 // Черновик и typing
@@ -30,8 +31,12 @@ export async function loadDraftForCurrentRoom() {
   if (!state.currentRoom || !els.messageInput) return
   try {
     const d = await api.getDraft(getUsername(), state.currentRoom, getToken())
-    if (d.success && d.text) setComposerPlainText(els.messageInput, d.text)
-    else setComposerPlainText(els.messageInput, '')
+    if (d.success && d.text) {
+      const dec = await decryptTextForRoom(state.currentRoom, d.text)
+      setComposerPlainText(els.messageInput, dec.text)
+    } else {
+      setComposerPlainText(els.messageInput, '')
+    }
   } catch {
     /* ignore */
   }
@@ -41,10 +46,10 @@ export async function loadDraftForCurrentRoom() {
 
 export function scheduleDraftSave() {
   clearTimeout(state.draftSaveTimer)
-  state.draftSaveTimer = setTimeout(() => {
+  state.draftSaveTimer = setTimeout(async () => {
     const room = state.currentRoom
     if (!room || !els.messageInput) return
-    const text = plainTextFromComposerRoot(els.messageInput) ?? ''
+    const text = await encryptTextForRoom(room, plainTextFromComposerRoot(els.messageInput) ?? '')
     void api.saveDraft(getUsername(), room, text, getToken())
     scheduleInboxRefresh()
   }, 900)
@@ -274,16 +279,18 @@ export async function sendMessage(options = {}) {
     return
   }
 
+  const room = state.currentRoom
+  const encryptedText = await encryptTextForRoom(room, text)
   const payload = {
-    room: state.currentRoom,
+    room,
     username: getUsername(),
-    message: text,
+    message: encryptedText,
   }
   if (state.replyTo) {
     payload.replyTo = {
       id: state.replyTo.message_id,
       username: state.replyTo.username,
-      text: state.replyTo.text,
+      text: state.replyTo.rawText || state.replyTo.text,
     }
   }
   if (mediaPayload) payload.media = mediaPayload
@@ -315,7 +322,7 @@ export async function sendMessage(options = {}) {
   }
   state.pendingMedia = null
   state.replyTo = null
-  void api.saveDraft(getUsername(), state.currentRoom, '', getToken())
+  void api.saveDraft(getUsername(), room, '', getToken())
   updateReplyPreview()
   updateSendButtonState()
   autosizeTextarea()
@@ -461,7 +468,7 @@ export function openEditMessageModal(msg) {
   })
 }
 
-function confirmEditMessage() {
+async function confirmEditMessage() {
   const msg = pendingEditMessage
   if (!msg) {
     closeSmoothModal(els.modalEditMessage)
@@ -478,10 +485,11 @@ function confirmEditMessage() {
     closeSmoothModal(els.modalEditMessage)
     return
   }
+  const encryptedText = await encryptTextForRoom(state.currentRoom, next)
   getSocket()?.emit('edit_message', {
     room: state.currentRoom,
     message_id: msg.message_id,
-    new_text: next,
+    new_text: encryptedText,
     username: getUsername(),
   })
   pendingEditMessage = null
@@ -502,7 +510,7 @@ export function bindEditMessageModal() {
   if (!els.modalEditMessage || !els.btnEditMessageConfirm || !els.btnEditMessageCancel) return
   if (els.modalEditMessage.dataset.editModalBound === '1') return
   els.modalEditMessage.dataset.editModalBound = '1'
-  els.btnEditMessageConfirm.addEventListener('click', confirmEditMessage)
+  els.btnEditMessageConfirm.addEventListener('click', () => void confirmEditMessage())
   els.btnEditMessageCancel.addEventListener('click', cancelEditMessage)
   els.modalEditMessage.addEventListener('click', (e) => {
     if (e.target === els.modalEditMessage) cancelEditMessage()
@@ -513,7 +521,7 @@ export function bindEditMessageModal() {
       cancelEditMessage()
     } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault()
-      confirmEditMessage()
+      void confirmEditMessage()
     }
   })
 }

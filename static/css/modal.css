@@ -176,6 +176,81 @@ body.light-theme .modal {
   flex: 1;
 }
 
+.e2ee-modal-card {
+  max-width: 560px;
+  max-height: none;
+  overflow: visible;
+  padding: 24px 28px;
+}
+
+#modal-e2ee-key .modal-content h2 {
+  margin-bottom: 14px;
+}
+
+#modal-e2ee-key .settings-modal-hint {
+  margin: 0 0 14px;
+}
+
+.e2ee-help-list {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 14px;
+  padding-left: 18px;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  line-height: 1.34;
+}
+
+.e2ee-help-list li::marker {
+  color: var(--accent);
+}
+
+.e2ee-key-input,
+.e2ee-key-output {
+  width: 100%;
+  resize: none;
+  min-height: 70px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  word-break: break-all;
+}
+
+.e2ee-key-output {
+  min-height: 62px;
+}
+
+.e2ee-generated-wrap {
+  margin-top: 14px;
+}
+
+.e2ee-generated-hint {
+  margin: 8px 0 0;
+}
+
+.e2ee-modal-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+  margin-top: 18px;
+}
+
+#modal-e2ee-key .e2ee-modal-buttons button {
+  height: 46px;
+  min-height: 46px;
+  min-width: 0;
+  margin: 0;
+  padding: 7px 12px;
+  font-size: 14px;
+  line-height: 1.15;
+}
+
+@media (max-width: 520px) {
+  .e2ee-modal-buttons {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Профиль: содержимое карточки не прокручивается (карточка растёт по высоте) */
 #modal-profile-edit .modal-content {
   max-height: none;

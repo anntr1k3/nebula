@@ -27,6 +27,7 @@ import { fillElementWithAppleEmoji, plainTextFromComposerRoot, setComposerPlainT
 import { closeSmoothModal } from './modal-smooth.js'
 import { closeMediaViewer } from './media-viewer.js'
 import { refreshSidebarProfileLabel } from './settings.js'
+import { encryptTextForRoom } from './e2ee.js'
 
 import {
   autosizeTextarea,
@@ -63,6 +64,8 @@ import {
   closeCurrentChat,
   closePinnedListModal,
   hidePrivateUserSuggest,
+  loadMessages,
+  loadPinnedStrip,
   loadRooms,
   loadUsersOnline,
   openChat,
@@ -121,6 +124,7 @@ export {
 let socketAppErrorListenerBound = false
 let messagesRefreshListenerBound = false
 let visibilityListenerBound = false
+let e2eeKeyChangedListenerBound = false
 
 // -----------------------------------------------------------------------------
 // Биндинги UI, не принадлежащие ни одной подсистеме эксклюзивно
@@ -149,8 +153,10 @@ function bindLocalSearch() {
         els.localSearchResults.innerHTML = ''
         return
       }
-      const data = await api.searchRoom(getUsername(), state.currentRoom, q, getToken())
-      const rows = data.results || []
+      const needle = q.toLocaleLowerCase()
+      const rows = state.messages
+        .filter((msg) => String(msg.text || '').toLocaleLowerCase().includes(needle))
+        .slice(-50)
       els.localSearchResults.innerHTML = ''
       if (!rows.length) {
         const empty = document.createElement('div')
@@ -172,11 +178,24 @@ function bindLocalSearch() {
         a.appendChild(meta)
         a.appendChild(text)
         a.addEventListener('click', () => {
-          scrollToMessageById(row.id)
+          scrollToMessageById(row.message_id)
         })
         els.localSearchResults.appendChild(a)
       })
     }, 320)
+  })
+}
+
+function bindE2eeKeyChanged() {
+  if (e2eeKeyChangedListenerBound) return
+  e2eeKeyChangedListenerBound = true
+  window.addEventListener('nebula-e2ee-key-changed', async (e) => {
+    const roomId = e.detail?.roomId
+    if (!roomId || roomId !== state.currentRoom) return
+    state.messages = []
+    renderMessages({ forceScrollBottom: true })
+    await loadMessages()
+    await loadPinnedStrip()
   })
 }
 
@@ -239,15 +258,17 @@ function bindScheduleTrigger() {
   els.scheduleConfirm?.addEventListener('click', async (e) => {
     e.stopPropagation()
     const raw = els.scheduleDatetimeInput?.value
-    if (!raw || !state.currentRoom) return
+    const room = state.currentRoom
+    if (!raw || !room) return
     const d = new Date(raw)
     if (Number.isNaN(d.getTime())) {
       showToast(t('schedulePrompt'), 'error')
       return
     }
     const text = plainTextFromComposerRoot(els.messageInput).trim()
+    const encryptedText = await encryptTextForRoom(room, text)
     const r = await api.scheduleMessage(
-      { room_id: state.currentRoom, text, scheduled_at: d.toISOString() },
+      { room_id: room, text: encryptedText, scheduled_at: d.toISOString() },
       getToken(),
     )
     if (r.success) {
@@ -361,6 +382,7 @@ export function bindMessengerExtras() {
   })
 
   bindDnd()
+  bindE2eeKeyChanged()
   bindLocalSearch()
   bindTtlTrigger()
   bindScheduleTrigger()

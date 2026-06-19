@@ -258,6 +258,7 @@
                 <i class="fa-solid fa-clock" aria-hidden="true"></i>
                 <span id="chat-scheduled-count" class="chat-scheduled-count" hidden></span>
               </button>
+              <button type="button" class="glass-button-small icon-only-btn" id="btn-chat-e2ee" data-i18n-title="e2eeDisabledTitle" data-i18n-aria="e2eeDisabledTitle"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></button>
               <button type="button" class="glass-button-small icon-only-btn" id="btn-chat-dnd" data-i18n-title="chatDndTitle" data-i18n-aria="chatDndTitle"><i class="fa-solid fa-bell-slash" aria-hidden="true"></i></button>
               <button type="button" class="glass-button-small icon-only-btn" id="btn-chat-local-search" data-i18n-title="searchInChat" data-i18n-aria="searchInChat"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></button>
             </div>
@@ -529,6 +530,57 @@
     ></div>
 
     <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+
+    <div
+      id="modal-e2ee-key"
+      class="modal modal--smooth"
+      hidden
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-e2ee-key-title"
+      aria-describedby="modal-e2ee-key-desc"
+    >
+      <div class="modal-content liquid-modal-card e2ee-modal-card">
+        <h2 id="modal-e2ee-key-title" data-i18n="e2eeModalTitle"></h2>
+        <p id="modal-e2ee-key-desc" class="settings-modal-hint" data-i18n="e2eeModalIntro"></p>
+        <ul class="e2ee-help-list">
+          <li data-i18n="e2eeHelpAutoCreate"></li>
+          <li data-i18n="e2eeHelpShare"></li>
+          <li data-i18n="e2eeHelpNoServer"></li>
+          <li data-i18n="e2eeHelpStorage"></li>
+        </ul>
+        <label class="composer-float-label" for="e2ee-key-input">
+          <span data-i18n="e2eeKeyInputLabel"></span>
+        </label>
+        <textarea
+          id="e2ee-key-input"
+          class="glass-input e2ee-key-input"
+          rows="3"
+          spellcheck="false"
+          autocomplete="off"
+          data-i18n-placeholder="e2eeKeyInputPlaceholder"
+        ></textarea>
+        <div id="e2ee-generated-wrap" class="e2ee-generated-wrap" hidden>
+          <label class="composer-float-label" for="e2ee-generated-key">
+            <span data-i18n="e2eeGeneratedKeyLabel"></span>
+          </label>
+          <textarea
+            id="e2ee-generated-key"
+            class="glass-input e2ee-key-output"
+            rows="2"
+            readonly
+            spellcheck="false"
+          ></textarea>
+          <p class="settings-modal-hint e2ee-generated-hint" data-i18n="e2eeGeneratedKeyHint"></p>
+        </div>
+        <div class="modal-buttons e2ee-modal-buttons">
+          <button type="button" class="glass-button" id="btn-e2ee-save" data-i18n="e2eeSaveOrCreate"></button>
+          <button type="button" class="glass-button-secondary" id="btn-e2ee-copy" data-i18n="e2eeCopyCurrent"></button>
+          <button type="button" class="glass-button-secondary" id="btn-e2ee-remove" data-i18n="e2eeRemoveKey"></button>
+          <button type="button" class="glass-button-secondary" id="btn-e2ee-close" data-i18n="closeButton"></button>
+        </div>
+      </div>
+    </div>
 
     <div
       id="modal-delete-message"

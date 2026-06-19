@@ -58,6 +58,7 @@ import {
 } from './settings.js'
 import { bindSearchInputListeners } from './search.js'
 import { fillElementWithAppleEmoji, syncComposerEmptyAttr } from './emoji-apple.js'
+import { bindE2eeUi } from './e2ee.js'
 
 function normalizePath() {
   let p = window.location.pathname.replace(/\/+$/, '') || '/'
@@ -594,6 +595,7 @@ function bindEvents() {
   })
 
   bindSearchInputListeners()
+  bindE2eeUi()
 
   els.emojiPickerBackdrop?.addEventListener('click', (e) => {
     e.stopPropagation()
