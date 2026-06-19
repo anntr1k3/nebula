@@ -21,16 +21,36 @@ export function connectSocket() {
     reconnectionDelayMax: 5000,
   })
 
+  /** Чтобы не показывать «соединение восстановлено» при самом первом подключении. */
+  let wasDisconnected = false
+
+  const emitConnectionState = (state) => {
+    window.dispatchEvent(
+      new CustomEvent('nebula-connection-change', { detail: { state } }),
+    )
+  }
+
   socket.on('connect', () => {
     const token = getToken()
     const username = getUsername()
     if (token && username) {
       socket.emit('user_online', { username, token })
     }
+    if (wasDisconnected) {
+      wasDisconnected = false
+      emitConnectionState('restored')
+    }
+  })
+
+  socket.on('disconnect', () => {
+    wasDisconnected = true
+    emitConnectionState('lost')
   })
 
   socket.on('connect_error', () => {
     console.warn('Ошибка подключения к серверу сокетов')
+    wasDisconnected = true
+    emitConnectionState('lost')
   })
 
   socket.on('error', (data) => {

@@ -5,23 +5,26 @@
  * Границы файлов совпадают с бывшими блочными комментариями в прежнем
  * монолитном main.css (3999 строк). Реальные стили разнесены по
  * `nebula/static/css/*.css` — см. план декомпозиции.
+ *
+ * `?v=` на каждом импорте сбрасывает кэш конкретного файла: меняя один CSS,
+ * поднимайте версию его строки (а заодно `main.css?v=` в index.html).
  */
 
-@import './_tokens.css';
-@import './_primitives.css';
-@import './liquid-glass.css';
-@import './sidebar-dropdown.css';
-@import './auth.css';
-@import './sidebar.css';
-@import './dock.css';
-@import './chat.css';
-@import './pinned-typing-reply.css';
-@import './inbox.css';
-@import './search.css';
-@import './settings.css';
-@import './context-emoji.css';
-@import './modal.css';
-@import './media-viewer.css';
-@import './toast.css';
-@import './scrollbar.css';
-@import './perf.css';
+@import './_tokens.css?v=nebula-20';
+@import './_primitives.css?v=nebula-20';
+@import './liquid-glass.css?v=nebula-20';
+@import './sidebar-dropdown.css?v=nebula-20';
+@import './auth.css?v=nebula-20';
+@import './sidebar.css?v=nebula-20';
+@import './dock.css?v=nebula-20';
+@import './chat.css?v=nebula-20';
+@import './pinned-typing-reply.css?v=nebula-20';
+@import './inbox.css?v=nebula-20';
+@import './search.css?v=nebula-20';
+@import './settings.css?v=nebula-20';
+@import './context-emoji.css?v=nebula-20';
+@import './modal.css?v=nebula-20';
+@import './media-viewer.css?v=nebula-20';
+@import './toast.css?v=nebula-20';
+@import './scrollbar.css?v=nebula-20';
+@import './perf.css?v=nebula-20';

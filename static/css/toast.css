@@ -90,6 +90,85 @@ body.light-theme .toast {
   }
 }
 
+/* —— Connection banner (потеря/восстановление связи с сокетом) —— */
+.connection-banner[hidden] {
+  display: none !important;
+}
+
+.connection-banner {
+  position: fixed;
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  max-width: min(440px, calc(100vw - 32px));
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  box-sizing: border-box;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
+  z-index: 10000;
+  background: color-mix(in srgb, var(--bg-panel, var(--glass-fill-elevated)) 88%, #000);
+  border: 1px solid color-mix(in srgb, var(--conn-accent, #f4b84a) 38%, transparent);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--transition-modal),
+    transform var(--transition-modal);
+}
+
+.connection-banner.connection-banner--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.connection-banner--ok {
+  --conn-accent: #43d17a;
+}
+
+.connection-banner-dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--conn-accent, #f4b84a);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--conn-accent, #f4b84a) 60%, transparent);
+  animation: connection-pulse 1.6s ease-out infinite;
+}
+
+.connection-banner--ok .connection-banner-dot {
+  animation: none;
+}
+
+@keyframes connection-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--conn-accent, #f4b84a) 55%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 7px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+body.light-theme .connection-banner {
+  background: color-mix(in srgb, #ffffff 88%, var(--conn-accent, #f4b84a) 4%);
+  border-color: color-mix(in srgb, var(--conn-accent, #f4b84a) 34%, #d7ddeb);
+  box-shadow: 0 10px 26px rgba(44, 68, 104, 0.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connection-banner-dot {
+    animation: none;
+  }
+}
+
 .glass-button:disabled {
   opacity: 0.45;
   cursor: not-allowed;

@@ -1,0 +1,16 @@
+{
+  "name": "nebula-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Frontend unit tests and lint config for the Nebula messenger client.",
+  "scripts": {
+    "test": "node --test",
+    "lint": "eslint static/js"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0"
+  }
+}

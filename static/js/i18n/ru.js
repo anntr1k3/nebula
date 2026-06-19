@@ -13,6 +13,8 @@ export default {
   registerLink: 'Регистрация',
   loginLink: 'Войти',
   logoutButton: 'Выход',
+  connectionLost: 'Соединение потеряно. Переподключение…',
+  connectionRestored: 'Соединение восстановлено',
   createGroupButton: '+ Создать группу',
   selectChat: 'Выберите чат для начала общения',
   selectChatHint: 'Откройте диалог из списка или начните новый — поле выше.',

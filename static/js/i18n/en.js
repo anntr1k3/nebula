@@ -13,6 +13,8 @@ export default {
   registerLink: 'Register',
   loginLink: 'Login',
   logoutButton: 'Logout',
+  connectionLost: 'Connection lost. Reconnecting…',
+  connectionRestored: 'Connection restored',
   createGroupButton: '+ Create Group',
   selectChat: 'Select a chat to start messaging',
   selectChatHint: 'Pick a chat from the list or start a new one using the field above.',

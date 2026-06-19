@@ -1,5 +1,6 @@
 import { readStoredTheme } from './themes.js'
 import { $ } from './dom.js'
+import { t } from './i18n.js'
 
 export const els = {}
 
@@ -38,6 +39,7 @@ export function collectEls() {
   els.authLogin = $('#auth-login')
   els.authRegister = $('#auth-register')
   els.toast = $('#toast')
+  els.connectionBanner = $('#connection-banner')
   els.modalCreate = $('#modal-create-room')
   els.modalProfileEdit = $('#modal-profile-edit')
   els.modalAppSettings = $('#modal-app-settings')
@@ -308,3 +310,44 @@ export function showToast(message, type = 'info') {
 
   showToast._t = setTimeout(() => hideToastAnimated(), TOAST_DISPLAY_MS)
 }
+
+let connectionBannerHideTimer = null
+let connectionBannerRaf = 0
+
+/** Показывает баннер связи: 'lost' — висит до восстановления, 'restored' — гаснет сам. */
+export function setConnectionBanner(state) {
+  const banner = els.connectionBanner
+  if (!banner) return
+  const textEl = banner.querySelector('.connection-banner-text')
+  clearTimeout(connectionBannerHideTimer)
+  cancelAnimationFrame(connectionBannerRaf)
+
+  if (state === 'lost') {
+    banner.classList.remove('connection-banner--ok')
+    if (textEl) textEl.textContent = t('connectionLost')
+    banner.hidden = false
+    connectionBannerRaf = requestAnimationFrame(() =>
+      banner.classList.add('connection-banner--visible'),
+    )
+    return
+  }
+
+  if (state === 'restored') {
+    banner.classList.add('connection-banner--ok')
+    if (textEl) textEl.textContent = t('connectionRestored')
+    banner.hidden = false
+    connectionBannerRaf = requestAnimationFrame(() =>
+      banner.classList.add('connection-banner--visible'),
+    )
+    connectionBannerHideTimer = setTimeout(() => {
+      banner.classList.remove('connection-banner--visible')
+      connectionBannerHideTimer = setTimeout(() => {
+        banner.hidden = true
+      }, 280)
+    }, 2200)
+  }
+}
+
+window.addEventListener('nebula-connection-change', (e) => {
+  setConnectionBanner(e.detail?.state)
+})

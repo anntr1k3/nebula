@@ -13,6 +13,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0c1220" id="meta-theme-color">
   <title>Небула</title>
+  <meta name="description" content="Небула — защищённый веб-мессенджер со сквозным E2E-шифрованием, отложенными сообщениями, групповыми чатами и быстрым поиском.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Небула">
+  <meta property="og:title" content="Небула — защищённый мессенджер">
+  <meta property="og:description" content="Сквозное E2E-шифрование, отложенные сообщения, группы и быстрый поиск. Лёгкий веб-мессенджер с тёмной и светлой темами.">
+  <meta property="og:url" content="https://nebulamess.ru/">
+  <meta property="og:image" content="https://nebulamess.ru/assets/logo-nebula-512.png?v=nebula-logo-1">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Небула — защищённый мессенджер">
+  <meta name="twitter:description" content="Сквозное E2E-шифрование, отложенные сообщения, группы и быстрый поиск.">
+  <meta name="twitter:image" content="https://nebulamess.ru/assets/logo-nebula-512.png?v=nebula-logo-1">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png?v=nebula-logo-1">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=nebula-logo-1">
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=nebula-logo-1">
@@ -20,7 +35,7 @@
   <link rel="preload" href="/css/inter-local.css?v=nebula-9" as="style">
   <link rel="stylesheet" href="/css/inter-local.css?v=nebula-9">
   <link rel="stylesheet" href="/css/fontawesome-subset.css?v=nebula-3">
-  <link rel="stylesheet" href="/css/main.css?v=nebula-19">
+  <link rel="stylesheet" href="/css/main.css?v=nebula-20">
   <script type="application/json" id="nebula-theme-bootstrap">{"ids":["dark","dark-midnight","dark-forest","light","light-warm","light-frost"],"meta":{"dark":"#0c1220","dark-midnight":"#0a0614","dark-forest":"#050d0a","light":"#e8ecf4","light-warm":"#ebe4d8","light-frost":"#eef8ff"}}</script>
 </head>
 <body>
@@ -531,6 +546,11 @@
 
     <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
 
+    <div id="connection-banner" class="connection-banner" hidden role="status" aria-live="polite">
+      <span class="connection-banner-dot" aria-hidden="true"></span>
+      <span class="connection-banner-text"></span>
+    </div>
+
     <div
       id="modal-e2ee-key"
       class="modal modal--smooth"
@@ -761,6 +781,6 @@
   </div>
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
-  <script type="module" src="/js/app.js?v=nebula-12"></script>
+  <script type="module" src="/js/app.js?v=nebula-13"></script>
 </body>
 </html>
