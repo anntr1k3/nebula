@@ -13,19 +13,19 @@
   height: 20px;
 }
 
-/* Кнопка в настройках */
+/* Кнопка в настройках — в стиле .theme-option/.language-option, чтобы не выбиваться */
 .accessibility-toggle {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
   padding: 12px 14px;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   border: 1px solid var(--glass-border);
-  background: var(--glass-fill-elevated);
+  background: var(--input-fill);
   color: var(--text);
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   text-align: left;
   transition: var(--transition-interactive);
@@ -33,6 +33,9 @@
 
 .accessibility-toggle:hover {
   border-color: var(--glass-border-bright);
+}
+
+.accessibility-toggle:not(.is-active):hover {
   background: var(--glass-highlight);
 }
 
@@ -40,12 +43,9 @@
   flex: 0 0 auto;
   display: inline-grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  font-size: 20px;
-  border-radius: var(--radius-full);
-  background: var(--input-fill);
-  border: 1px solid var(--glass-border);
+  width: 22px;
+  height: 22px;
+  font-size: 18px;
   color: var(--text);
 }
 
@@ -56,22 +56,18 @@
 
 .accessibility-toggle .accessibility-toggle-state {
   flex: 0 0 auto;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-muted);
 }
 
 .accessibility-toggle.is-active {
-  border-color: color-mix(in srgb, var(--accent) 60%, var(--glass-border-bright));
-  background: color-mix(in srgb, var(--accent-soft) 26%, var(--glass-fill-elevated));
-}
-
-.accessibility-toggle.is-active .accessibility-toggle-icon {
-  background: var(--accent);
   border-color: var(--accent);
-  color: var(--accent-text);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  background: var(--glass-fill-elevated);
 }
 
+.accessibility-toggle.is-active .accessibility-toggle-icon,
 .accessibility-toggle.is-active .accessibility-toggle-state {
   color: var(--accent);
 }
@@ -147,16 +143,22 @@ html.low-vision .inbox-time {
   font-size: 14px;
 }
 
-/* Заголовки и подписи в модалках */
-html.low-vision .settings-section-title,
-html.low-vision .modal-content h2,
+/* Заголовки и подписи в модалках — умеренный прирост, чтобы окно влезало */
+html.low-vision .settings-section-title {
+  font-size: 13px;
+}
+
+html.low-vision .modal-content h2 {
+  font-size: 20px;
+}
+
 html.low-vision .modal-content h3 {
-  font-size: 19px;
+  font-size: 16px;
 }
 
 html.low-vision .settings-modal-hint,
 html.low-vision .auth-quick-popover-label {
-  font-size: 14px;
+  font-size: 13px;
 }
 
 /* Экран входа — крупнее форма */
