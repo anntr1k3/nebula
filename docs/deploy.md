@@ -179,6 +179,14 @@ journalctl -u nebula -f
 Create `/etc/nginx/sites-available/nebula`:
 
 ```nginx
+# Set Connection: upgrade only for real WebSocket requests; otherwise close.
+# A blanket `Connection "upgrade"` makes the gevent-websocket worker hang on
+# normal REST requests (e.g. POST /api/login -> 504), so this map is required.
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ''      close;
+}
+
 server {
     listen 80;
     server_name your-domain.example;
@@ -193,7 +201,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
+        proxy_set_header Connection $connection_upgrade;
     }
 
     location /socket.io/ {
@@ -204,11 +212,14 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
+        proxy_set_header Connection $connection_upgrade;
         proxy_buffering off;
     }
 }
 ```
+
+The `map` block must sit at the `http` level (outside `server`); placing it at the
+top of the site file works because Nginx includes the file inside the `http` context.
 
 Enable the site:
 

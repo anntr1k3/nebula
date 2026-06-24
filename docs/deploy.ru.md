@@ -179,6 +179,15 @@ journalctl -u nebula -f
 Создайте `/etc/nginx/sites-available/nebula`:
 
 ```nginx
+# Connection: upgrade выставляется только для настоящих WebSocket-запросов,
+# иначе close. Безусловный `Connection "upgrade"` заставляет воркер
+# gevent-websocket зависать на обычных REST-запросах (например, POST /api/login
+# -> 504), поэтому этот map обязателен.
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ''      close;
+}
+
 server {
     listen 80;
     server_name your-domain.example;
@@ -193,7 +202,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
+        proxy_set_header Connection $connection_upgrade;
     }
 
     location /socket.io/ {
@@ -204,11 +213,14 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
+        proxy_set_header Connection $connection_upgrade;
         proxy_buffering off;
     }
 }
 ```
+
+Блок `map` должен находиться на уровне `http` (вне `server`); размещение в начале
+файла сайта работает, так как Nginx включает файл внутрь контекста `http`.
 
 Включите сайт:
 
