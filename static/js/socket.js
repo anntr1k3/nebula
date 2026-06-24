@@ -1,6 +1,8 @@
 import { getToken, getUsername } from './auth.js'
 
 let socket = null
+/** Намеренное отключение (выход из аккаунта): не показывать баннер «обрыв связи». */
+let intentionalDisconnect = false
 
 export function connectSocket() {
   if (typeof io === 'undefined') {
@@ -11,6 +13,7 @@ export function connectSocket() {
   /** Не создавать новый `io()` при обрыве: клиент сам переподключается; иначе теряются обработчики. */
   if (socket) return socket
 
+  intentionalDisconnect = false
   socket = io({
     path: '/socket.io',
     transports: ['websocket', 'polling'],
@@ -42,12 +45,15 @@ export function connectSocket() {
     }
   })
 
-  socket.on('disconnect', () => {
+  socket.on('disconnect', (reason) => {
+    // 'io client disconnect' = мы сами вызвали socket.disconnect() (выход) — это не обрыв.
+    if (intentionalDisconnect || reason === 'io client disconnect') return
     wasDisconnected = true
     emitConnectionState('lost')
   })
 
   socket.on('connect_error', () => {
+    if (intentionalDisconnect) return
     console.warn('Ошибка подключения к серверу сокетов')
     wasDisconnected = true
     emitConnectionState('lost')
@@ -74,10 +80,15 @@ export function connectSocket() {
 }
 
 export function disconnectSocket() {
+  intentionalDisconnect = true
   if (socket) {
     socket.disconnect()
     socket = null
   }
+  // Скрыть баннер связи, если он был показан (намеренный выход — не обрыв).
+  window.dispatchEvent(
+    new CustomEvent('nebula-connection-change', { detail: { state: 'reset' } }),
+  )
 }
 
 export function getSocket() {

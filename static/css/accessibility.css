@@ -72,6 +72,12 @@
   color: var(--accent);
 }
 
+/* Подсказка под переключателем — чуть ниже (у .settings-modal-hint отрицательный
+   верхний отступ, прижимающий её к кнопке). */
+#modal-app-settings .accessibility-toggle + .settings-modal-hint {
+  margin-top: 4px;
+}
+
 /* Кнопка на экране входа подсвечивается, когда режим включён */
 #auth-btn-lowvision.is-active {
   border-color: color-mix(in srgb, var(--accent) 64%, var(--glass-border-bright));

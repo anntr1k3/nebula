@@ -322,6 +322,13 @@ export function setConnectionBanner(state) {
   clearTimeout(connectionBannerHideTimer)
   cancelAnimationFrame(connectionBannerRaf)
 
+  if (state === 'reset') {
+    // Намеренный выход — мгновенно убрать баннер без анимации «восстановлено».
+    banner.classList.remove('connection-banner--visible')
+    banner.hidden = true
+    return
+  }
+
   if (state === 'lost') {
     banner.classList.remove('connection-banner--ok')
     if (textEl) textEl.textContent = t('connectionLost')
