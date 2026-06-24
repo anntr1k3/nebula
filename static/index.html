@@ -35,7 +35,7 @@
   <link rel="preload" href="/css/inter-local.css?v=nebula-9" as="style">
   <link rel="stylesheet" href="/css/inter-local.css?v=nebula-9">
   <link rel="stylesheet" href="/css/fontawesome-subset.css?v=nebula-3">
-  <link rel="stylesheet" href="/css/main.css?v=nebula-20">
+  <link rel="stylesheet" href="/css/main.css?v=nebula-21">
   <script type="application/json" id="nebula-theme-bootstrap">{"ids":["dark","dark-midnight","dark-forest","light","light-warm","light-frost"],"meta":{"dark":"#0c1220","dark-midnight":"#0a0614","dark-forest":"#050d0a","light":"#e8ecf4","light-warm":"#ebe4d8","light-frost":"#eef8ff"}}</script>
 </head>
 <body>
@@ -79,6 +79,9 @@
       document.body.className = th.indexOf('light') === 0 ? 'light-theme' : 'dark-theme'
       var m = document.getElementById('meta-theme-color')
       if (m) m.setAttribute('content', colors[th] || '#0c1220')
+      try {
+        if (localStorage.getItem('lowVision') === '1') document.documentElement.classList.add('low-vision')
+      } catch (e) {}
     })()
   </script>
   <div id="app-root">
@@ -159,6 +162,21 @@
           data-i18n-aria="appearanceAria"
         >
           <i id="auth-theme-icon" class="fa-solid fa-moon" aria-hidden="true"></i>
+        </button>
+        <button
+          type="button"
+          id="auth-btn-lowvision"
+          class="auth-quick-btn"
+          data-lowvision-toggle
+          aria-pressed="false"
+          data-i18n-title="lowVisionLabel"
+          data-i18n-aria="lowVisionLabel"
+        >
+          <svg class="lowvision-glyph" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="7.4" r="1.5" fill="currentColor" stroke="none"></circle>
+            <path d="M6.5 10.2 H17.5 M12 10.2 V15 M12 15 L9.5 19 M12 15 L14.5 19"></path>
+          </svg>
         </button>
       </div>
 
@@ -488,6 +506,26 @@
           <button type="button" class="theme-option" data-theme="light-frost" data-i18n="themeLightFrost"></button>
         </div>
 
+        <h3 class="settings-section-title" data-i18n="accessibilityTitle"></h3>
+        <button
+          type="button"
+          id="btn-lowvision-toggle"
+          class="accessibility-toggle"
+          data-lowvision-toggle
+          aria-pressed="false"
+        >
+          <span class="accessibility-toggle-icon" aria-hidden="true">
+            <svg class="lowvision-glyph" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="7.4" r="1.5" fill="currentColor" stroke="none"></circle>
+              <path d="M6.5 10.2 H17.5 M12 10.2 V15 M12 15 L9.5 19 M12 15 L14.5 19"></path>
+            </svg>
+          </span>
+          <span class="accessibility-toggle-label" data-i18n="lowVisionLabel"></span>
+          <span class="accessibility-toggle-state" data-i18n="lowVisionOff" aria-hidden="true"></span>
+        </button>
+        <p class="settings-modal-hint" data-i18n="lowVisionHint"></p>
+
         <h3 class="settings-section-title" data-i18n="blockedUsers"></h3>
         <div class="settings-modal-block-stack">
           <input id="block-username-input" type="text" class="glass-input" data-i18n-placeholder="blockUserHint" autocomplete="off">
@@ -781,6 +819,6 @@
   </div>
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
-  <script type="module" src="/js/app.js?v=nebula-13"></script>
+  <script type="module" src="/js/app.js?v=nebula-14"></script>
 </body>
 </html>

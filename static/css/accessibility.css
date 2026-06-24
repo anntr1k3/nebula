@@ -1,0 +1,197 @@
+/* —— Доступность: кнопки-переключатели + режим для слабовидящих —— */
+
+/* Иконка-символ доступности (встроенный SVG, масштабируется по font-size). */
+.lowvision-glyph {
+  display: block;
+  width: 1em;
+  height: 1em;
+}
+
+/* На экране входа кнопки мелкие (13px) — задаём иконке размер как у иконки темы */
+.auth-quick-btn .lowvision-glyph {
+  width: 20px;
+  height: 20px;
+}
+
+/* Кнопка в настройках */
+.accessibility-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-fill-elevated);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: var(--transition-interactive);
+}
+
+.accessibility-toggle:hover {
+  border-color: var(--glass-border-bright);
+  background: var(--glass-highlight);
+}
+
+.accessibility-toggle .accessibility-toggle-icon {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  font-size: 20px;
+  border-radius: var(--radius-full);
+  background: var(--input-fill);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+}
+
+.accessibility-toggle .accessibility-toggle-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.accessibility-toggle .accessibility-toggle-state {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.accessibility-toggle.is-active {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--glass-border-bright));
+  background: color-mix(in srgb, var(--accent-soft) 26%, var(--glass-fill-elevated));
+}
+
+.accessibility-toggle.is-active .accessibility-toggle-icon {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.accessibility-toggle.is-active .accessibility-toggle-state {
+  color: var(--accent);
+}
+
+/* Кнопка на экране входа подсвечивается, когда режим включён */
+#auth-btn-lowvision.is-active {
+  border-color: color-mix(in srgb, var(--accent) 64%, var(--glass-border-bright));
+  background: color-mix(in srgb, var(--accent-soft) 30%, transparent);
+  color: var(--accent);
+}
+
+/* ============================================================
+   РЕЖИМ ДЛЯ СЛАБОВИДЯЩИХ — класс на <html>, поверх любой темы.
+   Цель: крупнее текст, выше контраст, заметный фокус,
+   меньше прозрачности/блюра для читаемости.
+   ============================================================ */
+
+html.low-vision body {
+  font-size: 17px;
+  /* Убираем приглушение вторичного текста — максимум контраста.
+     !important перебивает тема-специфичные селекторы вида
+     body.dark-theme[data-theme="…"], у которых выше специфичность. */
+  --text-muted: var(--text) !important;
+  /* Мягче блюр (стекло меньше «съедает» читаемость) */
+  --blur: 8px !important;
+  --blur-heavy: 10px !important;
+}
+
+/* Текст сообщений — крупнее и просторнее */
+html.low-vision .message-text {
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+html.low-vision .message-username {
+  font-size: 15px;
+}
+
+html.low-vision .message-time {
+  font-size: 13px;
+}
+
+/* Поля ввода и композер */
+html.low-vision .glass-input,
+html.low-vision .composer-field,
+html.low-vision .composer-input-editable {
+  font-size: 18px;
+}
+
+html.low-vision .composer-input-editable[data-empty='true']::before {
+  font-size: 18px;
+}
+
+/* Кнопки крупнее */
+html.low-vision .glass-button,
+html.low-vision .glass-button-secondary {
+  font-size: 16px;
+}
+
+html.low-vision .glass-button-small {
+  font-size: 15px;
+}
+
+/* Список чатов / входящие */
+html.low-vision .inbox-name,
+html.low-vision .inbox-username,
+html.low-vision .chat-header-title-wrap h3 {
+  font-size: 17px;
+}
+
+html.low-vision .inbox-preview,
+html.low-vision .inbox-time {
+  font-size: 14px;
+}
+
+/* Заголовки и подписи в модалках */
+html.low-vision .settings-section-title,
+html.low-vision .modal-content h2,
+html.low-vision .modal-content h3 {
+  font-size: 19px;
+}
+
+html.low-vision .settings-modal-hint,
+html.low-vision .auth-quick-popover-label {
+  font-size: 14px;
+}
+
+/* Экран входа — крупнее форма */
+html.low-vision #view-auth .glass-input,
+html.low-vision #view-auth .glass-button {
+  font-size: 18px;
+}
+
+/* Ссылки подчёркнуты для различимости */
+html.low-vision a,
+html.low-vision .link {
+  text-decoration: underline;
+}
+
+/* Заметный фокус для клавиатурной навигации (критично для слабовидящих) */
+html.low-vision *:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Меньше прозрачности у крупных панелей — текст на них читается увереннее */
+html.low-vision .liquid-chat-header,
+html.low-vision .message-input-container.liquid-composer {
+  backdrop-filter: blur(var(--blur)) saturate(1.1);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(1.1);
+}
+
+/* Иконки действий крупнее (вложение/отправка/композер) */
+html.low-vision .composer-attach,
+html.low-vision .composer-send {
+  width: 48px;
+  height: 48px;
+}
+
+html.low-vision .composer-attach i,
+html.low-vision .composer-send i {
+  font-size: 19px;
+}

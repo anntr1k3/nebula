@@ -11,6 +11,7 @@ import {
 import { t, setLocale, getLocale, applyI18nToDom, translateApiMessage } from './i18n.js'
 import { disconnectSocket } from './socket.js'
 import { readStoredTheme, normalizeTheme, isLightTheme, THEME_META_COLOR } from './themes.js'
+import { bindLowVisionControls } from './accessibility.js'
 import { els, state, collectEls, showToast } from './app-shell.js'
 import { openSmoothModal, closeSmoothModal } from './modal-smooth.js'
 import { hideSidebarDropdown } from './sidebar-dropdown.js'
@@ -526,6 +527,7 @@ function bindEvents() {
   })
 
   bindAuthQuickControls()
+  bindLowVisionControls()
 
   $('#btn-save-profile').addEventListener('click', async () => {
     const ok = await saveSettingsProfile()
